@@ -2,8 +2,6 @@ const encoder = new TextEncoder();
 const decoder = new TextDecoder();
 
 const ESC = "\u001b[";
-const RESET = `${ESC}39;49;m`;
-const END_COLORS = "m";
 
 export function initAnsi() {
   Deno.setRaw(Deno.stdin.rid, true);
@@ -13,8 +11,34 @@ export function shutdownAnsi() {
   Deno.setRaw(Deno.stdin.rid, false);
 }
 
-export function writeAnsi(str: string) {
-  Deno.stdout.writeSync(encoder.encode(ESC + str));
+export enum AnsiColor {
+  Black,
+  Red,
+  Green,
+  Yellow,
+  Blue,
+  Magenta,
+  Cyan,
+  White,
+}
+
+const AnsiColorCodes = [
+  30,
+  31,
+  32,
+  33,
+  34,
+  35,
+  36,
+  37,
+];
+
+export function writeAnsi(str: string, escIncluded = false) {
+  if (!escIncluded) {
+    Deno.stdout.writeSync(encoder.encode(ESC + str));
+  } else {
+    Deno.stdout.writeSync(encoder.encode(str));
+  }
 }
 
 export function clearScreen() {
@@ -53,4 +77,24 @@ export async function getConsoleSize(): Promise<{ width: any; height: any }> {
   } else {
     return { width: 0, height: 0 };
   }
+}
+
+export function hideCursor() {
+  writeAnsi("?25l");
+}
+
+export function showCursor() {
+  writeAnsi("?25h");
+}
+
+export function writeColor(
+  text: string,
+  foreColor: AnsiColor,
+  backColor: AnsiColor = AnsiColor.Black,
+) {
+  writeAnsi(
+    `${ESC}${AnsiColorCodes[foreColor]};${AnsiColorCodes[backColor] +
+      10}m${text}`,
+    true,
+  );
 }
