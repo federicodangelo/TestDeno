@@ -8,6 +8,7 @@ import {
   AnsiColor,
   hideCursor,
   showCursor,
+  readStdinRaw,
 } from "./ansi.ts";
 
 async function delay(ms: number) {
@@ -42,11 +43,11 @@ function fillScreen(c: string, front: AnsiColor, back: AnsiColor) {
   for (let y = 0; y < consoleSize.height; y++) {
     moveCursorTo(0, y);
 
-    writeColor(c.repeat(consoleSize.width), front, back);
+    //writeColor(c.repeat(consoleSize.width), front, back);
 
-    /*for (let x = 0; x < consoleSize.width; x++) {
+    for (let x = 0; x < consoleSize.width; x++) {
       writeColor(c, front, back);
-    }*/
+    }
   }
 }
 
@@ -59,18 +60,26 @@ const fillColors: AnsiColor[] = [
   AnsiColor.Green,
   AnsiColor.Yellow,
 ];
-for (let i = 0; i < frames; i++) {
+let cancel = false;
+
+readStdinRaw().then(() => cancel = true);
+
+for (let i = 0; i < frames && !cancel; i++) {
   fillScreen("*", fillColors[i % fillColors.length], AnsiColor.Black);
+  await delay(0);
 }
 const endTime = performance.now();
 
-clearScreen();
-writeColor(
-  `Time to fill screen ${frames} times: ${endTime -
-    startTime}ms, fps:${frames / ((endTime - startTime) / 1000)}`,
-  AnsiColor.Green,
-);
+if (!cancel) {
+  clearScreen();
+  writeColor(
+    `Time to fill screen ${frames} times: ${endTime -
+      startTime}ms, fps:${frames / ((endTime - startTime) / 1000)}\n`,
+    AnsiColor.Green,
+  );
+}
 
+writeColor("", AnsiColor.White);
 showCursor();
 shutdownAnsi();
 
