@@ -1,32 +1,22 @@
 import {
-  getConsoleSize,
   initAnsi,
   shutdownAnsi,
   moveCursorTo,
   clearScreen,
   writeColor,
   AnsiColor,
-  hideCursor,
-  showCursor,
-  readStdinRaw,
   getColor,
   writeAnsi,
+  consoleSize,
 } from "./ansi.ts";
+import { delay } from "./utils.ts";
+import { readInput } from "./input.ts";
 
-async function delay(ms: number) {
-  return new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
-}
-
-initAnsi();
-hideCursor();
+await initAnsi();
 
 clearScreen();
 
 writeColor("Starting test\n", AnsiColor.Blue);
-
-const consoleSize = await getConsoleSize();
 
 writeColor(
   `Console dimensions: `,
@@ -34,10 +24,12 @@ writeColor(
 );
 
 writeColor(
-  `${consoleSize.width}x${consoleSize.height}\n`,
+  `${consoleSize.width}x${consoleSize.height}`,
   AnsiColor.Black,
   AnsiColor.White,
 );
+
+writeColor("\n", AnsiColor.White);
 
 await delay(1000);
 
@@ -49,7 +41,7 @@ const fillColors: AnsiColor[] = [
   AnsiColor.Yellow,
 ];
 
-let fileScreens = 0;
+let frameNumber = 0;
 
 function fillScreen(c: string) {
   moveCursorTo(0, 0);
@@ -62,7 +54,7 @@ function fillScreen(c: string) {
     for (let x = 0; x < consoleSize.width; x++) {
       line += getColor(
         c,
-        fillColors[(y + x + fileScreens) % fillColors.length],
+        fillColors[(y + x + frameNumber) % fillColors.length],
         AnsiColor.Black,
       );
     }
@@ -71,32 +63,39 @@ function fillScreen(c: string) {
   }
 
   writeAnsi(screen, true);
-
-  fileScreens++;
 }
 
-const frames = 100;
+const totalFrames = 100;
 const startTime = performance.now();
 let cancel = false;
 
-readStdinRaw().then(() => cancel = true);
+let fillChar = "*";
 
-for (let i = 0; i < frames && !cancel; i++) {
-  fillScreen("*");
-  await delay(0);
+for (let i = 0; i < totalFrames && !cancel; i++) {
+  fillScreen(fillChar);
+  const input = readInput();
+  if (input) {
+    const code = input.charCodeAt(0);
+    if (code >= 32) {
+      //Only visible chars
+      fillChar = input[0];
+      if (fillChar === "z") cancel = true;
+    }
+  }
+  await delay(1);
+  frameNumber++;
 }
 const endTime = performance.now();
 
-if (!cancel) {
+if (!cancel && frameNumber > 0) {
   clearScreen();
   writeColor(
-    `Time to fill screen ${frames} times: ${endTime -
-      startTime}ms, fps:${frames / ((endTime - startTime) / 1000)}\n`,
+    `Time to fill screen ${frameNumber} times: ${endTime -
+      startTime}ms, fps:${frameNumber / ((endTime - startTime) / 1000)}\n`,
     AnsiColor.Green,
   );
 }
-writeColor("\n", AnsiColor.White);
-showCursor();
+
 shutdownAnsi();
 
 Deno.exit();

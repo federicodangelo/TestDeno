@@ -7,7 +7,7 @@
       "request": "launch",
       "cwd": "${workspaceFolder}",
       "runtimeExecutable": "deno",
-      "runtimeArgs": ["run", "--unstable", "--inspect", "-A", "src/test.ts"],
+      "runtimeArgs": ["run", "--unstable", "--inspect", "-A", "src/main.ts"],
       "port": 9229,
       "console": "integratedTerminal",
       //"outputCapture": "std"

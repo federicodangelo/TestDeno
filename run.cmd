@@ -1,1 +1,1 @@
-deno run --unstable src/test.ts
+deno run --unstable src/benchmark.ts
