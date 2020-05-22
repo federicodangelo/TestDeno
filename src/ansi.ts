@@ -87,14 +87,19 @@ export function showCursor() {
   writeAnsi("?25h");
 }
 
+export function getColor(
+  text: string,
+  foreColor: AnsiColor,
+  backColor: AnsiColor = AnsiColor.Black,
+) {
+  return `${ESC}${AnsiColorCodes[foreColor]};${AnsiColorCodes[backColor] +
+    10}m${text}`;
+}
+
 export function writeColor(
   text: string,
   foreColor: AnsiColor,
   backColor: AnsiColor = AnsiColor.Black,
 ) {
-  writeAnsi(
-    `${ESC}${AnsiColorCodes[foreColor]};${AnsiColorCodes[backColor] +
-      10}m${text}`,
-    true,
-  );
+  writeAnsi(getColor(text, foreColor, backColor), true);
 }
