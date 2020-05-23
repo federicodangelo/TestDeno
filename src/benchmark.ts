@@ -1,32 +1,35 @@
 import {
   initAnsi,
   shutdownAnsi,
-  moveCursorTo,
-  clearScreen,
-  writeColor,
+  drawClearScreen,
+  drawColorText,
   AnsiColor,
-  getColor,
-  writeAnsi,
+  getColorText,
   consoleSize,
+  BlockElements,
+  getMoveCursorTo,
+  drawBox,
+  AsciiBuffer,
+  drawAsciiBuffer,
 } from "./ansi.ts";
 import { delay } from "./utils.ts";
 import { readInput } from "./input.ts";
 
 await initAnsi();
 
-clearScreen();
+drawClearScreen();
 
-writeColor("Starting test\n", AnsiColor.Blue);
+drawColorText("Starting test\n", AnsiColor.Blue);
 
-writeColor(`Console dimensions: `, AnsiColor.Blue);
+drawColorText(`Console dimensions: `, AnsiColor.Blue);
 
-writeColor(
+drawColorText(
   `${consoleSize.width}x${consoleSize.height}`,
   AnsiColor.Black,
-  AnsiColor.White
+  AnsiColor.White,
 );
 
-writeColor("\n", AnsiColor.White);
+drawColorText("\n", AnsiColor.White);
 
 await delay(1000);
 
@@ -41,32 +44,30 @@ const fillColors: AnsiColor[] = [
 let frameNumber = 0;
 
 function fillScreen(c: string) {
-  moveCursorTo(0, 0);
+  drawBox(0, 0, consoleSize.width, consoleSize.height);
 
-  let screen = "";
+  let screen = new AsciiBuffer(8192);
 
-  for (let y = 0; y < consoleSize.height; y++) {
-    let line = "";
+  for (let y = 1; y < consoleSize.height - 1; y++) {
+    screen.add(getMoveCursorTo(1, y));
 
-    for (let x = 0; x < consoleSize.width; x++) {
-      line += getColor(
+    for (let x = 1; x < consoleSize.width - 1; x++) {
+      screen.add(getColorText(
         c,
         fillColors[(y + x + frameNumber) % fillColors.length],
-        AnsiColor.Black
-      );
+        AnsiColor.Black,
+      ));
     }
-
-    screen += line;
   }
 
-  writeAnsi(screen, true);
+  drawAsciiBuffer(screen);
 }
 
 const totalFrames = 100;
 const startTime = performance.now();
 let cancel = false;
 
-let fillChar = "*";
+let fillChar = BlockElements.FullBlock;
 
 for (let i = 0; i < totalFrames && !cancel; i++) {
   fillScreen(fillChar);
@@ -85,12 +86,11 @@ for (let i = 0; i < totalFrames && !cancel; i++) {
 const endTime = performance.now();
 
 if (!cancel && frameNumber > 0) {
-  clearScreen();
-  writeColor(
-    `Time to fill screen ${frameNumber} times: ${endTime - startTime}ms, fps:${
-      frameNumber / ((endTime - startTime) / 1000)
-    }\n`,
-    AnsiColor.Green
+  drawClearScreen();
+  drawColorText(
+    `Time to fill screen ${frameNumber} times: ${endTime -
+      startTime}ms, fps:${frameNumber / ((endTime - startTime) / 1000)}\n`,
+    AnsiColor.Green,
   );
 }
 

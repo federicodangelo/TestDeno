@@ -1,0 +1,13 @@
+{
+  "$schema": "https://deno.land/x/denon/schema.json",
+  "scripts": {
+    "dev": {
+      "cmd": "deno run src/main.ts",
+      "unstable": true
+    },
+    "bench": {
+      "cmd": "deno run src/benchmark.ts",
+      "unstable": true
+    }
+  }
+}
