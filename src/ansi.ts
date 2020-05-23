@@ -1,5 +1,7 @@
 import { readInputRaw, initInput, shutdownInput } from "./input.ts";
 
+const useUTF8 = Deno.build.os !== "windows";
+
 const encoder = new TextEncoder();
 
 const ESC = "\u001b[";
@@ -112,6 +114,8 @@ export class DoubleLineElements {
   public static ConnectorCross = String.fromCharCode(206); //╬
 }
 
+const tmpBuffer = new Uint8Array(32768);
+
 export class AsciiBuffer {
   private buffer: Uint8Array;
   private offset = 0;
@@ -121,14 +125,42 @@ export class AsciiBuffer {
   }
 
   public add(str: string, times = 1) {
-    while (str.length * times + this.offset > this.buffer.length) {
-      const newBuffer = new Uint8Array(this.buffer.length * 2);
-      newBuffer.set(this.buffer, 0);
-      this.buffer = newBuffer;
-    }
-    for (let t = 0; t < times; t++) {
-      for (let i = 0; i < str.length; i++) {
-        this.buffer[this.offset++] = str.charCodeAt(i);
+    if (useUTF8) {
+      const { read, written } = encoder.encodeInto(str, tmpBuffer);
+      if (read === str.length) {
+        while (written * times + this.offset > this.buffer.length) {
+          const newBuffer = new Uint8Array(this.buffer.length * 2);
+          newBuffer.set(this.buffer, 0);
+          this.buffer = newBuffer;
+        }
+        for (let t = 0; t < times; t++) {
+          for (let i = 0; i < written; i++) {
+            this.buffer[this.offset++] = tmpBuffer[i];
+          }
+        }
+      } else {
+        const enc = encoder.encode(str);
+        while (enc.length * times + this.offset > this.buffer.length) {
+          const newBuffer = new Uint8Array(this.buffer.length * 2);
+          newBuffer.set(this.buffer, 0);
+          this.buffer = newBuffer;
+        }
+        for (let t = 0; t < times; t++) {
+          for (let i = 0; i < enc.length; i++) {
+            this.buffer[this.offset++] = enc[i];
+          }
+        }
+      }
+    } else {
+      while (str.length * times + this.offset > this.buffer.length) {
+        const newBuffer = new Uint8Array(this.buffer.length * 2);
+        newBuffer.set(this.buffer, 0);
+        this.buffer = newBuffer;
+      }
+      for (let t = 0; t < times; t++) {
+        for (let i = 0; i < str.length; i++) {
+          this.buffer[this.offset++] = str.charCodeAt(i);
+        }
       }
     }
   }
@@ -189,7 +221,11 @@ export function drawAsciiBuffer(buffer: AsciiBuffer) {
 }
 
 export function drawAscii(str: string) {
-  Deno.stdout.writeSync(encodeAscii(str));
+  if (useUTF8) {
+    Deno.stdout.writeSync(encoder.encode(str));
+  } else {
+    Deno.stdout.writeSync(encodeAscii(str));
+  }
 }
 
 export function drawClearScreen() {
