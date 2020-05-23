@@ -29,9 +29,17 @@ export enum AnsiColor {
   Magenta,
   Cyan,
   White,
+  BrightBlack,
+  BrightRed,
+  BrightGreen,
+  BrightYellow,
+  BrightBlue,
+  BrightMagenta,
+  BrightCyan,
+  BrightWhite,
 }
 
-const AnsiColorCodes = [
+const AnsiColorCodesFront = [
   30,
   31,
   32,
@@ -40,6 +48,33 @@ const AnsiColorCodes = [
   35,
   36,
   37,
+  90,
+  91,
+  92,
+  93,
+  94,
+  95,
+  96,
+  97,
+];
+
+const AnsiColorCodesBack = [
+  40,
+  41,
+  42,
+  43,
+  44,
+  45,
+  46,
+  47,
+  100,
+  101,
+  102,
+  103,
+  104,
+  105,
+  106,
+  107,
 ];
 
 export function writeAnsi(str: string, escIncluded = false) {
@@ -68,8 +103,11 @@ export async function getConsoleSize(): Promise<{ width: any; height: any }> {
   const line = await readInputRaw(); //Read cursor position
   //Cursor position response format is "ESC[_posy_;_pos_x_R"
   if (line.startsWith(ESC) && line.endsWith("R")) {
-    const { [0]: height, [1]: width } = line.substring(2).replace("R", "")
-      .split(";").map((x) => parseInt(x));
+    const { [0]: height, [1]: width } = line
+      .substring(2)
+      .replace("R", "")
+      .split(";")
+      .map((x) => parseInt(x));
 
     return { width, height };
   } else {
@@ -88,16 +126,15 @@ export function showCursor() {
 export function getColor(
   text: string,
   foreColor: AnsiColor,
-  backColor: AnsiColor = AnsiColor.Black,
+  backColor: AnsiColor
 ) {
-  return `${ESC}${AnsiColorCodes[foreColor]};${AnsiColorCodes[backColor] +
-    10}m${text}`;
+  return `${ESC}${AnsiColorCodesFront[foreColor]};${AnsiColorCodesBack[backColor]}m${text}`;
 }
 
 export function writeColor(
   text: string,
   foreColor: AnsiColor,
-  backColor: AnsiColor = AnsiColor.Black,
+  backColor: AnsiColor = AnsiColor.Black
 ) {
   writeAnsi(getColor(text, foreColor, backColor), true);
 }

@@ -18,15 +18,12 @@ clearScreen();
 
 writeColor("Starting test\n", AnsiColor.Blue);
 
-writeColor(
-  `Console dimensions: `,
-  AnsiColor.Blue,
-);
+writeColor(`Console dimensions: `, AnsiColor.Blue);
 
 writeColor(
   `${consoleSize.width}x${consoleSize.height}`,
   AnsiColor.Black,
-  AnsiColor.White,
+  AnsiColor.White
 );
 
 writeColor("\n", AnsiColor.White);
@@ -34,11 +31,11 @@ writeColor("\n", AnsiColor.White);
 await delay(1000);
 
 const fillColors: AnsiColor[] = [
-  AnsiColor.Red,
-  AnsiColor.Cyan,
-  AnsiColor.Blue,
-  AnsiColor.Green,
-  AnsiColor.Yellow,
+  AnsiColor.BrightRed,
+  AnsiColor.BrightCyan,
+  AnsiColor.BrightBlue,
+  AnsiColor.BrightGreen,
+  AnsiColor.BrightYellow,
 ];
 
 let frameNumber = 0;
@@ -55,7 +52,7 @@ function fillScreen(c: string) {
       line += getColor(
         c,
         fillColors[(y + x + frameNumber) % fillColors.length],
-        AnsiColor.Black,
+        AnsiColor.Black
       );
     }
 
@@ -90,9 +87,10 @@ const endTime = performance.now();
 if (!cancel && frameNumber > 0) {
   clearScreen();
   writeColor(
-    `Time to fill screen ${frameNumber} times: ${endTime -
-      startTime}ms, fps:${frameNumber / ((endTime - startTime) / 1000)}\n`,
-    AnsiColor.Green,
+    `Time to fill screen ${frameNumber} times: ${endTime - startTime}ms, fps:${
+      frameNumber / ((endTime - startTime) / 1000)
+    }\n`,
+    AnsiColor.Green
   );
 }
 
