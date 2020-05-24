@@ -17,7 +17,7 @@ export async function initAnsi() {
 }
 
 export function shutdownAnsi() {
-  drawResetColor();
+  drawAscii(`${ESC}0m`); //reset color
   showCursor();
   shutdownInput();
 }
@@ -49,6 +49,29 @@ export async function getConsoleSize(): Promise<{ width: any; height: any }> {
   } else {
     return { width: 0, height: 0 };
   }
+}
+
+export function drawAscii(str: string) {
+  if (useUTF8) {
+    Deno.stdout.writeSync(encoder.encode(str));
+  } else {
+    Deno.stdout.writeSync(encodeAscii(str));
+  }
+}
+
+export function encodeAscii(str: string) {
+  const buffer = new Uint8Array(str.length);
+  for (let i = 0; i < str.length; i++) {
+    buffer[i] = str.charCodeAt(i);
+  }
+  return buffer;
+}
+
+export function drawAsciiBuffer(buffer: AnsiScreen) {
+  const codes16 = buffer.getArray();
+  const codes8 = new Uint8Array(codes16.length);
+  codes8.set(codes16);
+  Deno.stdout.writeSync(codes8);
 }
 
 export enum AnsiColor {
@@ -114,192 +137,124 @@ export class DoubleLineElements {
   public static ConnectorCross = String.fromCharCode(206); //╬
 }
 
-const tmpBuffer = new Uint8Array(32768);
-
-export class AsciiBuffer {
-  private buffer: Uint8Array;
-  private offset = 0;
-
-  public constructor(capacity = 16) {
-    this.buffer = new Uint8Array(capacity);
-  }
-
-  public add(str: string, times = 1) {
-    if (useUTF8) {
-      const { read, written } = encoder.encodeInto(str, tmpBuffer);
-      if (read === str.length) {
-        while (written * times + this.offset > this.buffer.length) {
-          const newBuffer = new Uint8Array(this.buffer.length * 2);
-          newBuffer.set(this.buffer, 0);
-          this.buffer = newBuffer;
-        }
-        for (let t = 0; t < times; t++) {
-          for (let i = 0; i < written; i++) {
-            this.buffer[this.offset++] = tmpBuffer[i];
-          }
-        }
-      } else {
-        const enc = encoder.encode(str);
-        while (enc.length * times + this.offset > this.buffer.length) {
-          const newBuffer = new Uint8Array(this.buffer.length * 2);
-          newBuffer.set(this.buffer, 0);
-          this.buffer = newBuffer;
-        }
-        for (let t = 0; t < times; t++) {
-          for (let i = 0; i < enc.length; i++) {
-            this.buffer[this.offset++] = enc[i];
-          }
-        }
-      }
-    } else {
-      while (str.length * times + this.offset > this.buffer.length) {
-        const newBuffer = new Uint8Array(this.buffer.length * 2);
-        newBuffer.set(this.buffer, 0);
-        this.buffer = newBuffer;
-      }
-      for (let t = 0; t < times; t++) {
-        for (let i = 0; i < str.length; i++) {
-          this.buffer[this.offset++] = str.charCodeAt(i);
-        }
-      }
-    }
-  }
-
-  public getArray(): Uint8Array {
-    return this.buffer.subarray(0, this.offset);
-  }
-}
-
 const AnsiColorCodesFront = [
-  30,
-  31,
-  32,
-  33,
-  34,
-  35,
-  36,
-  37,
-  90,
-  91,
-  92,
-  93,
-  94,
-  95,
-  96,
-  97,
+  "30",
+  "31",
+  "32",
+  "33",
+  "34",
+  "35",
+  "36",
+  "37",
+  "90",
+  "91",
+  "92",
+  "93",
+  "94",
+  "95",
+  "96",
+  "97",
 ];
 
 const AnsiColorCodesBack = [
-  40,
-  41,
-  42,
-  43,
-  44,
-  45,
-  46,
-  47,
-  100,
-  101,
-  102,
-  103,
-  104,
-  105,
-  106,
-  107,
+  "40",
+  "41",
+  "42",
+  "43",
+  "44",
+  "45",
+  "46",
+  "47",
+  "100",
+  "101",
+  "102",
+  "103",
+  "104",
+  "105",
+  "106",
+  "107",
 ];
 
-export function encodeAscii(str: string) {
-  const buffer = new Uint8Array(str.length);
-  for (let i = 0; i < str.length; i++) {
-    buffer[i] = str.charCodeAt(i);
+export class AnsiScreen {
+  private buffer: Uint16Array;
+  private offset = 0;
+
+  public constructor(capacity = 16) {
+    this.buffer = new Uint16Array(capacity);
   }
-  return buffer;
-}
 
-export function drawAsciiBuffer(buffer: AsciiBuffer) {
-  Deno.stdout.writeSync(buffer.getArray());
-}
-
-export function drawAscii(str: string) {
-  if (useUTF8) {
-    Deno.stdout.writeSync(encoder.encode(str));
-  } else {
-    Deno.stdout.writeSync(encodeAscii(str));
+  public text(str: string, times = 1) {
+    while (str.length * times + this.offset > this.buffer.length) {
+      const newBuffer = new Uint16Array(this.buffer.length * 2);
+      newBuffer.set(this.buffer, 0);
+      this.buffer = newBuffer;
+    }
+    for (let t = 0; t < times; t++) {
+      for (let i = 0; i < str.length; i++) {
+        this.buffer[this.offset++] = str.charCodeAt(i);
+      }
+    }
+    return this;
   }
-}
 
-export function drawClearScreen() {
-  drawAscii(`${ESC}2J`);
-  drawMoveCursorTo(0, 0);
-}
-
-export function getMoveCursorTo(x: number, y: number) {
-  return `${ESC}${y + 1};${x + 1}H`;
-}
-
-export function drawMoveCursorTo(x: number, y: number) {
-  drawAscii(getMoveCursorTo(x, y));
-}
-
-export function getColorText(
-  text: string,
-  foreColor: AnsiColor,
-  backColor: AnsiColor,
-) {
-  return `${ESC}${AnsiColorCodesFront[foreColor]};${
-    AnsiColorCodesBack[backColor]
-  }m${text}`;
-}
-
-export function drawColorText(
-  text: string,
-  foreColor: AnsiColor,
-  backColor: AnsiColor = AnsiColor.Black,
-) {
-  drawAscii(getColorText(text, foreColor, backColor));
-}
-
-export function getColor(
-  foreColor: AnsiColor,
-  backColor: AnsiColor = AnsiColor.Black,
-) {
-  return `${ESC}${AnsiColorCodesFront[foreColor]};${
-    AnsiColorCodesBack[backColor]
-  }`;
-}
-
-export function drawColor(
-  foreColor: AnsiColor,
-  backColor: AnsiColor = AnsiColor.Black,
-) {
-  drawAscii(getColor(foreColor, backColor));
-}
-
-export function getResetColor() {
-  return `${ESC}0m`;
-}
-
-export function drawResetColor() {
-  drawAscii(getResetColor());
-}
-
-export function drawBox(x: number, y: number, width: number, height: number) {
-  let box = new AsciiBuffer();
-
-  box.add(getMoveCursorTo(x, y));
-  box.add(DoubleLineElements.CornerTopLeft);
-  box.add(DoubleLineElements.Horizontal, width - 2);
-  box.add(DoubleLineElements.CornerTopRight);
-  for (let i = 0; i < height - 2; i++) {
-    box.add(getMoveCursorTo(x, y + 1 + i));
-    box.add(DoubleLineElements.Vertical);
-    box.add(getMoveCursorTo(x + width, y + 1 + i));
-    box.add(DoubleLineElements.Vertical);
+  public apply() {
+    drawAsciiBuffer(this);
+    this.offset = 0;
   }
-  box.add(getMoveCursorTo(x, y + height));
-  box.add(DoubleLineElements.CornerBottomLeft);
-  box.add(DoubleLineElements.Horizontal, width - 2);
-  box.add(DoubleLineElements.CornerBottomRight);
 
-  drawAsciiBuffer(box);
+  public getArray() {
+    return this.buffer.subarray(0, this.offset);
+  }
+
+  public clearScreen() {
+    this.text(ESC);
+    this.text("2J");
+    this.moveCursorTo(0, 0);
+    return this;
+  }
+
+  public moveCursorTo(x: number, y: number) {
+    this.text(ESC);
+    this.text((y + 1).toString());
+    this.text(";");
+    this.text((x + 1).toString());
+    this.text("H");
+    return this;
+  }
+
+  public color(
+    foreColor: AnsiColor,
+    backColor: AnsiColor = AnsiColor.Black,
+  ) {
+    this.text(ESC);
+    this.text(AnsiColorCodesFront[foreColor]);
+    this.text(";");
+    this.text(AnsiColorCodesBack[backColor]);
+    this.text("m");
+    return this;
+  }
+
+  public resetColor() {
+    this.text(ESC);
+    this.text("0m");
+    return this;
+  }
+
+  public box(x: number, y: number, width: number, height: number) {
+    this.moveCursorTo(x, y);
+    this.text(DoubleLineElements.CornerTopLeft);
+    this.text(DoubleLineElements.Horizontal, width - 2);
+    this.text(DoubleLineElements.CornerTopRight);
+    for (let i = 0; i < height - 2; i++) {
+      this.moveCursorTo(x, y + 1 + i);
+      this.text(DoubleLineElements.Vertical);
+      this.moveCursorTo(x + width, y + 1 + i);
+      this.text(DoubleLineElements.Vertical);
+    }
+    this.moveCursorTo(x, y + height);
+    this.text(DoubleLineElements.CornerBottomLeft);
+    this.text(DoubleLineElements.Horizontal, width - 2);
+    this.text(DoubleLineElements.CornerBottomRight);
+    return this;
+  }
 }
