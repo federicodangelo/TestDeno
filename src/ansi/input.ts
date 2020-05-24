@@ -19,10 +19,6 @@ async function readStdinRaw(maxLen = 512): Promise<string> {
   return "";
 }
 
-export async function readInputRaw() {
-  return readStdinRaw();
-}
-
 let availableInput = "";
 
 function updateInput() {
@@ -44,4 +40,22 @@ export function readInput() {
   const toReturn = availableInput;
   availableInput = "";
   return toReturn;
+}
+
+export function readInputBetween(from: string, to: string) {
+  updateInput();
+
+  const first = availableInput.indexOf(from);
+  const last = availableInput.indexOf(to, first + from.length);
+
+  if (first >= 0 && last >= 0) {
+    const toReturn = availableInput.substring(first, last);
+
+    const before = availableInput.substring(0, first);
+    const after = availableInput.substring(last + to.length);
+    availableInput = before + after;
+    return toReturn;
+  }
+
+  return "";
 }

@@ -1,13 +1,13 @@
 import {
   initAnsi,
   shutdownAnsi,
-  AnsiColor,
   consoleSize,
-  BlockElements,
   AnsiScreen,
-} from "./ansi.ts";
+  updateConsoleSize,
+} from "./ansi/ansi.ts";
+import { readInput } from "./ansi/input.ts";
 import { delay } from "./utils.ts";
-import { readInput } from "./input.ts";
+import { AnsiColor, BlockElements } from "./ansi/types.ts";
 
 await initAnsi();
 
@@ -40,7 +40,7 @@ const fillColors: AnsiColor[] = [
 let frameNumber = 0;
 
 function drawScreen(c: string) {
-  screen.box(0, 0, consoleSize.width, consoleSize.height);
+  screen.border(0, 0, consoleSize.width, consoleSize.height);
 
   for (let y = 1; y < consoleSize.height - 1; y++) {
     screen.moveCursorTo(1, y);
@@ -62,6 +62,8 @@ let cancel = false;
 let fillChar = BlockElements.FullBlock;
 
 for (let i = 0; i < totalFrames && !cancel; i++) {
+  if (await updateConsoleSize()) screen.clearScreen();
+
   drawScreen(fillChar);
   const input = readInput();
   if (input) {

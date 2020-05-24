@@ -1,13 +1,13 @@
 import {
   initAnsi,
-  AnsiColor,
   shutdownAnsi,
   AnsiScreen,
-  BlockElements,
   consoleSize,
-} from "./ansi.ts";
+  updateConsoleSize,
+} from "./ansi/ansi.ts";
 import { delay } from "./utils.ts";
-import { readInput } from "./input.ts";
+import { readInput } from "./ansi/input.ts";
+import { AnsiColor, BlockElements } from "./ansi/types.ts";
 
 await initAnsi();
 
@@ -46,26 +46,31 @@ const characters = [
   p2,
 ];
 
-while (running) {
-  screen.clearScreen();
-
+async function draw() {
+  if (await updateConsoleSize()) screen.clearScreen();
+  screen.color(AnsiColor.Black, AnsiColor.Black).fill(
+    1,
+    1,
+    consoleSize.width - 1,
+    consoleSize.height - 1,
+    " ",
+  );
   for (let i = 0; i < characters.length; i++) {
     const char = characters[i];
-
     screen.color(char.color).moveCursorTo(char.x, char.y).text(
       BlockElements.FullBlock,
     );
   }
-
-  screen.color(AnsiColor.BrightMagenta).box(
+  screen.color(AnsiColor.BrightMagenta).border(
     0,
     0,
     consoleSize.width,
     consoleSize.height,
   );
-
   screen.apply();
+}
 
+function update() {
   for (let i = 0; i < npcs.length; i++) {
     const npc = npcs[i];
     switch (Math.floor(Math.random() * 4)) {
@@ -85,6 +90,7 @@ while (running) {
   }
 
   const input = readInput();
+
   if (input) {
     input.split("").forEach((c) => {
       switch (c) {
@@ -126,6 +132,12 @@ while (running) {
     char.x = Math.max(Math.min(char.x, consoleSize.width - 2), 1);
     char.y = Math.max(Math.min(char.y, consoleSize.height - 2), 1);
   }
+}
+
+while (running) {
+  await draw();
+
+  update();
 
   await delay(50);
 }
