@@ -2,30 +2,33 @@ import {
   initAnsi,
   shutdownAnsi,
   consoleSize,
-  AnsiScreen,
   updateConsoleSize,
+  clearScreen,
 } from "./ansi/ansi.ts";
 import { readInput } from "./ansi/input.ts";
 import { delay } from "./utils.ts";
 import { AnsiColor, BlockElements } from "./ansi/types.ts";
+import { AnsiContextImpl } from "./ansi/context.ts";
 
 await initAnsi();
 
-const screen = new AnsiScreen();
+clearScreen();
 
-screen.clearScreen();
+const context = new AnsiContextImpl();
 
-screen.color(AnsiColor.Blue).text("Starting test\n");
+context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
 
-screen.color(AnsiColor.Blue).text("Console dimensions:");
+context.color(AnsiColor.Blue, AnsiColor.Black).text("Starting test\n");
 
-screen.color(AnsiColor.Black, AnsiColor.White).text(
+context.color(AnsiColor.Blue, AnsiColor.Black).text("Console dimensions:");
+
+context.color(AnsiColor.Black, AnsiColor.White).text(
   `${consoleSize.width}x${consoleSize.height}`,
 );
 
-screen.color(AnsiColor.White).text("\n");
+context.color(AnsiColor.White, AnsiColor.Black).text("\n");
 
-screen.apply();
+context.endDraw();
 
 await delay(1000);
 
@@ -40,19 +43,20 @@ const fillColors: AnsiColor[] = [
 let frameNumber = 0;
 
 function drawScreen(c: string) {
-  screen.border(0, 0, consoleSize.width, consoleSize.height);
+  context.border(0, 0, consoleSize.width, consoleSize.height);
 
   for (let y = 1; y < consoleSize.height - 1; y++) {
-    screen.moveCursorTo(1, y);
+    context.moveCursorTo(1, y);
 
     for (let x = 1; x < consoleSize.width - 1; x++) {
-      screen.color(fillColors[(y + x + frameNumber) % fillColors.length]).text(
+      context.color(
+        fillColors[(y + x + frameNumber) % fillColors.length],
+        AnsiColor.Black,
+      ).text(
         c,
       );
     }
   }
-
-  screen.apply();
 }
 
 const totalFrames = 100;
@@ -62,9 +66,14 @@ let cancel = false;
 let fillChar = BlockElements.FullBlock;
 
 for (let i = 0; i < totalFrames && !cancel; i++) {
-  if (await updateConsoleSize()) screen.clearScreen();
+  if (await updateConsoleSize()) clearScreen();
+
+  context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
 
   drawScreen(fillChar);
+
+  context.endDraw();
+
   const input = readInput();
   if (input) {
     const code = input.charCodeAt(0);
@@ -80,10 +89,13 @@ for (let i = 0; i < totalFrames && !cancel; i++) {
 const endTime = performance.now();
 
 if (!cancel && frameNumber > 0) {
-  screen.clearScreen().color(AnsiColor.Green).text(
+  clearScreen();
+  context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
+  context.color(AnsiColor.Green, AnsiColor.Black).text(
     `Time to fill screen ${frameNumber} times: ${endTime -
       startTime}ms, fps:${frameNumber / ((endTime - startTime) / 1000)}\n`,
-  ).apply();
+  );
+  context.endDraw();
 }
 
 shutdownAnsi();

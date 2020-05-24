@@ -1,44 +1,45 @@
-import {
-  initAnsi,
-  shutdownAnsi,
-  AnsiScreen,
-  consoleSize,
-  updateConsoleSize,
-} from "./ansi/ansi.ts";
 import { delay } from "./utils.ts";
 import { readInput } from "./ansi/input.ts";
 import { AnsiColor, BlockElements } from "./ansi/types.ts";
+import { buildEngine, destroyEngine } from "./ansi/engine.ts";
+import { CharacterWidget } from "./ansi/widgets/CharacterWidget.ts";
+import { BoxContainerWidget } from "./ansi/widgets/BoxContainerWidget.ts";
+import { consoleSize, clearScreen } from "./ansi/ansi.ts";
 
-await initAnsi();
+const engine = await buildEngine();
 
-const screen = new AnsiScreen();
+clearScreen();
 
-screen.clearScreen().color(AnsiColor.Blue).text("Running\n").apply();
+const p1 = new CharacterWidget(
+  BlockElements.FullBlock,
+  AnsiColor.Red,
+  AnsiColor.Black,
+);
+p1.x = 3;
+p1.y = 3;
 
-type Character = {
-  color: AnsiColor;
-  x: number;
-  y: number;
-};
+const p2 = new CharacterWidget(
+  BlockElements.FullBlock,
+  AnsiColor.Blue,
+  AnsiColor.Black,
+);
+p2.x = 13;
+p2.y = 3;
 
-const p1: Character = {
-  color: AnsiColor.Red,
-  x: 3,
-  y: 3,
-};
-
-const p2: Character = {
-  color: AnsiColor.Blue,
-  x: 13,
-  y: 3,
-};
+const npcs: CharacterWidget[] = [
+  new CharacterWidget(
+    BlockElements.FullBlock,
+    AnsiColor.BrightYellow,
+    AnsiColor.Black,
+  ),
+  new CharacterWidget(
+    BlockElements.FullBlock,
+    AnsiColor.BrightGreen,
+    AnsiColor.Black,
+  ),
+];
 
 let running = true;
-
-const npcs: Character[] = [
-  { color: AnsiColor.BrightYellow, x: 20, y: 4 },
-  { color: AnsiColor.BrightGreen, x: 22, y: 3 },
-];
 
 const characters = [
   ...npcs,
@@ -46,28 +47,21 @@ const characters = [
   p2,
 ];
 
+const playingBox = new BoxContainerWidget(
+  1,
+  AnsiColor.BrightMagenta,
+  AnsiColor.Black,
+  AnsiColor.White,
+  AnsiColor.Black,
+  " ",
+);
+characters.forEach((c) => c.parent = playingBox);
+engine.addWidget(playingBox);
+
 async function draw() {
-  if (await updateConsoleSize()) screen.clearScreen();
-  screen.color(AnsiColor.Black, AnsiColor.Black).fill(
-    1,
-    1,
-    consoleSize.width - 1,
-    consoleSize.height - 1,
-    " ",
-  );
-  for (let i = 0; i < characters.length; i++) {
-    const char = characters[i];
-    screen.color(char.color).moveCursorTo(char.x, char.y).text(
-      BlockElements.FullBlock,
-    );
-  }
-  screen.color(AnsiColor.BrightMagenta).border(
-    0,
-    0,
-    consoleSize.width,
-    consoleSize.height,
-  );
-  screen.apply();
+  playingBox.width = consoleSize.width;
+  playingBox.height = consoleSize.height;
+  await engine.draw();
 }
 
 function update() {
@@ -129,8 +123,11 @@ function update() {
 
   for (let i = 0; i < characters.length; i++) {
     const char = characters[i];
-    char.x = Math.max(Math.min(char.x, consoleSize.width - 2), 1);
-    char.y = Math.max(Math.min(char.y, consoleSize.height - 2), 1);
+    char.x = Math.max(Math.min(char.x, playingBox.innerWidth - char.width), 0);
+    char.y = Math.max(
+      Math.min(char.y, playingBox.innerHeight - char.height),
+      0,
+    );
   }
 }
 
@@ -142,6 +139,6 @@ while (running) {
   await delay(50);
 }
 
-shutdownAnsi();
+destroyEngine(engine);
 
 Deno.exit();

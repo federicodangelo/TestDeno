@@ -1,3 +1,5 @@
+export const ESC = "\u001b[";
+
 export class BlockElements {
   //Block
   public static FullBlock = String.fromCharCode(219); //█
@@ -112,3 +114,105 @@ export const AnsiColorCodesBack = [
   "106",
   "107",
 ];
+
+export interface AnsiContext {
+  pushTransform(x: number, y: number): void;
+  popTransform(): void;
+
+  pushClip(x: number, y: number, width: number, height: number): void;
+  popClip(): void;
+
+  moveCursorTo(x: number, y: number): AnsiContext;
+
+  color(
+    foreColor: AnsiColor,
+    backColor: AnsiColor,
+  ): AnsiContext;
+
+  resetColor(): AnsiContext;
+
+  text(str: string): AnsiContext;
+  textTimes(str: string, times: number): AnsiContext;
+
+  border(x: number, y: number, width: number, height: number): AnsiContext;
+
+  fill(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    char: string,
+  ): AnsiContext;
+}
+
+export interface WidgetContainer extends Widget {
+  readonly children: Widget[];
+  readonly innerX: number;
+  readonly innerY: number;
+  readonly innerWidth: number;
+  readonly innerHeight: number;
+}
+
+export interface Widget {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  parent: WidgetContainer | null;
+  draw(context: AnsiContext): void;
+}
+
+export class Point {
+  public x: number;
+  public y: number;
+
+  public constructor(
+    x: number = 0,
+    y: number = 0,
+  ) {
+    this.x = x;
+    this.y = y;
+  }
+
+  public set(x: number, y: number) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+export class Rect {
+  public x: number;
+  public y: number;
+  public width: number;
+  public height: number;
+
+  public constructor(
+    x: number = 0,
+    y: number = 0,
+    width: number = 0,
+    height: number = 0,
+  ) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+
+  public set(x: number, y: number, width: number, height: number) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+  }
+
+  public clone() {
+    return new Rect(this.x, this.y, this.width, this.height);
+  }
+}
+
+export interface Engine {
+  draw(): Promise<void>;
+  update(): void;
+  addWidget(widget: Widget): void;
+  removeWidget(widget: Widget): void;
+}
