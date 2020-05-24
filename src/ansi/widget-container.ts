@@ -27,6 +27,17 @@ export abstract class BaseWidgetContainer extends BaseWidget
     return this._children;
   }
 
+  public updateLayout(parentWidth: number, parentHeight: number) {
+    super.updateLayout(parentWidth, parentHeight);
+
+    for (let i = 0; i < this.children.length; i++) {
+      this.children[i].updateLayout(
+        this.innerWidth,
+        this.innerHeight,
+      );
+    }
+  }
+
   public draw(context: AnsiContext): void {
     context.pushTransform(this.x, this.y);
     context.pushClip(0, 0, this.width, this.height);
@@ -48,10 +59,7 @@ export abstract class BaseWidgetContainer extends BaseWidget
       context.popClip();
       context.popTransform();
     }
-    this.drawSelfAfterChildren(context);
     context.popClip();
     context.popTransform();
   }
-
-  protected abstract drawSelfAfterChildren(context: AnsiContext): void;
 }

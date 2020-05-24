@@ -10,7 +10,11 @@ export const consoleSize = { width: 0, height: 0 };
 
 export async function initAnsi() {
   initInput();
-  await updateConsoleSize();
+  requestUpdateConsoleSize();
+  while (!updateConsoleSizeFromInput()) {
+    await delay(10);
+  }
+
   hideCursor();
 }
 
@@ -32,19 +36,18 @@ export function clearScreen() {
   drawAscii(`${ESC}2J`);
 }
 
-export async function updateConsoleSize(): Promise<boolean> {
+export function requestUpdateConsoleSize() {
   drawAscii(`${ESC}?25l`); //hide cursor
   drawAscii(`${ESC}s`); //save cursor position
   drawAscii(`${ESC}999;999H`); //Move to huge bottom / right position
   drawAscii(`${ESC}6n`); //request cursor position
   drawAscii(`${ESC}u`); //restore cursor position
+}
 
+export function updateConsoleSizeFromInput() {
   let line = readInputBetween(ESC, "R");
 
-  while (line.length === 0) {
-    await delay(0);
-    line = readInputBetween(ESC, "R");
-  }
+  while (line.length === 0) return false;
 
   //Cursor position response format is "ESC[_posy_;_pos_x_R"
   const { [0]: height, [1]: width } = line
@@ -53,13 +56,9 @@ export async function updateConsoleSize(): Promise<boolean> {
     .split(";")
     .map((x) => parseInt(x));
 
-  if (width !== consoleSize.width || height !== consoleSize.height) {
-    consoleSize.width = width;
-    consoleSize.height = height;
-    return true;
-  }
-
-  return false;
+  consoleSize.width = width;
+  consoleSize.height = height;
+  return true;
 }
 
 function drawAscii(str: string) {

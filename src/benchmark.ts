@@ -2,10 +2,11 @@ import {
   initAnsi,
   shutdownAnsi,
   consoleSize,
-  updateConsoleSize,
   clearScreen,
+  requestUpdateConsoleSize,
+  updateConsoleSizeFromInput,
 } from "./ansi/ansi.ts";
-import { readInput } from "./ansi/input.ts";
+import { readInput, updateInput } from "./ansi/input.ts";
 import { delay } from "./utils.ts";
 import { AnsiColor, BlockElements } from "./ansi/types.ts";
 import { AnsiContextImpl } from "./ansi/context.ts";
@@ -66,14 +67,15 @@ let cancel = false;
 let fillChar = BlockElements.FullBlock;
 
 for (let i = 0; i < totalFrames && !cancel; i++) {
-  if (await updateConsoleSize()) clearScreen();
-
   context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
 
   drawScreen(fillChar);
 
   context.endDraw();
 
+  requestUpdateConsoleSize();
+  updateInput();
+  updateConsoleSizeFromInput();
   const input = readInput();
   if (input) {
     const code = input.charCodeAt(0);

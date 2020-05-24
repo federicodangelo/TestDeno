@@ -1,4 +1,4 @@
-import { Widget, AnsiContext, WidgetContainer } from "./types.ts";
+import { Widget, AnsiContext, WidgetContainer, WidgetLayout } from "./types.ts";
 
 export abstract class BaseWidget implements Widget {
   private _x: number = 0;
@@ -6,6 +6,13 @@ export abstract class BaseWidget implements Widget {
   private _width: number = 0;
   private _height: number = 0;
   private _parent: WidgetContainer | null = null;
+
+  public layout: WidgetLayout | null = null;
+
+  public setLayout(layout: WidgetLayout | null) {
+    this.layout = layout;
+    return this;
+  }
 
   public get x() {
     return this._x;
@@ -70,6 +77,41 @@ export abstract class BaseWidget implements Widget {
   }
 
   private onTransformChanged() {
+  }
+
+  public updateLayout(parentWidth: number, parentHeight: number): void {
+    const layout = this.layout;
+    if (layout !== null) {
+      if (layout.heightPercent !== undefined) {
+        this.height = Math.ceil(
+          parentHeight * layout.heightPercent / 100,
+        );
+      }
+      if (layout.widthPercent !== undefined) {
+        this.width = Math.ceil(
+          parentWidth * layout.widthPercent / 100,
+        );
+      }
+
+      if (layout.customSizeFn !== undefined) {
+        layout.customSizeFn(this, parentWidth, parentHeight);
+      }
+
+      if (layout.horizontalSpacingPercent !== undefined) {
+        this.x = Math.floor(
+          (parentWidth - this.width) * layout.horizontalSpacingPercent / 100,
+        );
+      }
+      if (layout.verticalSpacingPercent !== undefined) {
+        this.y = Math.floor(
+          (parentHeight - this.height) * layout.verticalSpacingPercent / 100,
+        );
+      }
+
+      if (layout.customPositionFn !== undefined) {
+        layout.customPositionFn(this, parentWidth, parentHeight);
+      }
+    }
   }
 
   public draw(context: AnsiContext): void {

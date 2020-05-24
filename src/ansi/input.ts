@@ -21,7 +21,7 @@ async function readStdinRaw(maxLen = 512): Promise<string> {
 
 let availableInput = "";
 
-function updateInput() {
+export function updateInput() {
   const readFn = () =>
     readStdinRaw().then((str) => {
       availableInput += str;
@@ -36,7 +36,6 @@ export function hasInput() {
 }
 
 export function readInput() {
-  updateInput();
   const toReturn = availableInput;
   availableInput = "";
   return toReturn;

@@ -145,6 +145,23 @@ export interface AnsiContext {
   ): AnsiContext;
 }
 
+export interface WidgetLayout {
+  widthPercent?: number;
+  heightPercent?: number;
+  horizontalSpacingPercent?: number; //0 <- left, 50 <- center, 100 <- right
+  verticalSpacingPercent?: number; //0 <- top, 50 <- center, 100 <- bottom
+  customSizeFn?: (
+    widget: Widget,
+    parentWidth: number,
+    parentHeight: number,
+  ) => void;
+  customPositionFn?: (
+    widget: Widget,
+    parentWidth: number,
+    parentHeight: number,
+  ) => void;
+}
+
 export interface WidgetContainer extends Widget {
   readonly children: Widget[];
   readonly innerX: number;
@@ -159,7 +176,10 @@ export interface Widget {
   width: number;
   height: number;
   parent: WidgetContainer | null;
+  updateLayout(parentWidth: number, parentHeight: number): void;
   draw(context: AnsiContext): void;
+  layout: WidgetLayout | null;
+  setLayout(layout: WidgetLayout | null): Widget;
 }
 
 export class Point {
@@ -211,8 +231,9 @@ export class Rect {
 }
 
 export interface Engine {
-  draw(): Promise<void>;
+  draw(): void;
   update(): void;
   addWidget(widget: Widget): void;
   removeWidget(widget: Widget): void;
+  readInput(): string;
 }
