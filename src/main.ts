@@ -14,17 +14,19 @@ let running = true;
 initGame(engine);
 
 const fpsLabel = new LabelWidget(
-  " Cool Engine! - fps: ",
+  "FPS: 0.00",
   AnsiColor.White,
-  AnsiColor.Black,
+  AnsiColor.Blue,
 );
 
-fpsLabel.layout = {
-  horizontalSpacingPercent: 0,
-};
+const statsLabel = new LabelWidget(
+  "Players: 2\nNpcs: 2",
+  AnsiColor.White,
+  AnsiColor.Blue,
+);
 
 fpsLabel.parent = mainUI.rightPanel;
-fpsLabel.backColor = AnsiColor.Blue;
+statsLabel.parent = mainUI.rightPanel;
 
 let frames = 0;
 let framesTime = performance.now();
@@ -34,7 +36,7 @@ function updateFps() {
   frames++;
   if (now - framesTime > 1000) {
     const fps = frames / ((now - framesTime) / 1000);
-    fpsLabel.text = " Cool Engine! - fps: " + fps.toFixed(2) + " ";
+    fpsLabel.text = "FPS: " + fps.toFixed(2) + " ";
     framesTime = now;
     frames = 0;
   }

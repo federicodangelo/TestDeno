@@ -1,4 +1,9 @@
-import { AnsiContext, WidgetContainer, AnsiColor } from "./types.ts";
+import {
+  AnsiContext,
+  WidgetContainer,
+  AnsiColor,
+  ChildrenLayout,
+} from "./types.ts";
 import { BaseWidget } from "./widget.ts";
 
 export abstract class BaseWidgetContainer extends BaseWidget
@@ -6,6 +11,13 @@ export abstract class BaseWidgetContainer extends BaseWidget
   private _children: BaseWidget[] = [];
 
   public border: number = 0;
+
+  public childrenLayout: ChildrenLayout | null = null;
+
+  public setChildrenLayout(layout: ChildrenLayout | null) {
+    this.childrenLayout = layout;
+    return this;
+  }
 
   public get innerX() {
     return this.border;
@@ -30,11 +42,44 @@ export abstract class BaseWidgetContainer extends BaseWidget
   public updateLayout(parentWidth: number, parentHeight: number) {
     super.updateLayout(parentWidth, parentHeight);
 
-    for (let i = 0; i < this.children.length; i++) {
-      this.children[i].updateLayout(
-        this.innerWidth,
-        this.innerHeight,
-      );
+    if (
+      this.childrenLayout === null || this.childrenLayout.type === "absolute"
+    ) {
+      for (let i = 0; i < this.children.length; i++) {
+        this.children[i].updateLayout(
+          this.innerWidth,
+          this.innerHeight,
+        );
+      }
+    } else if (
+      this.childrenLayout !== null && this.childrenLayout.type === "vertical"
+    ) {
+      const spacing = this.childrenLayout.spacing || 0;
+      let top = 0;
+      for (let i = 0; i < this.children.length; i++) {
+        this.children[i].updateLayout(
+          this.innerWidth,
+          this.innerHeight,
+        );
+        this.children[i].x = 0;
+        this.children[i].y = top;
+        top += this.children[i].height + spacing;
+      }
+    } else if (
+      this.childrenLayout !== null &&
+      this.childrenLayout.type === "horizontal"
+    ) {
+      const spacing = this.childrenLayout.spacing || 0;
+      let left = 0;
+      for (let i = 0; i < this.children.length; i++) {
+        this.children[i].updateLayout(
+          this.innerWidth,
+          this.innerHeight,
+        );
+        this.children[i].y = 0;
+        this.children[i].x = left;
+        left += this.children[i].width + spacing;
+      }
     }
   }
 

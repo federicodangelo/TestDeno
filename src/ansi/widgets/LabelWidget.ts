@@ -6,10 +6,16 @@ export class LabelWidget extends BaseWidget {
   public backColor: AnsiColor;
 
   private _text: string = "";
+  private _linesText: string[] = [];
 
   public set text(val: string) {
     this._text = val;
-    this.width = val.length;
+    this._linesText = val.split("\n");
+    this.width = this._linesText.map((s) => s.length).reduce(
+      (max, c) => Math.max(max, c),
+      0,
+    );
+    this.height = this._linesText.length;
   }
 
   public get text() {
@@ -25,6 +31,10 @@ export class LabelWidget extends BaseWidget {
   }
 
   protected drawSelf(context: AnsiContext) {
-    context.color(this.foreColor, this.backColor).text(this.text);
+    context.color(this.foreColor, this.backColor);
+
+    for (let i = 0; i < this._linesText.length; i++) {
+      context.moveCursorTo(0, i).text(this._linesText[i]);
+    }
   }
 }

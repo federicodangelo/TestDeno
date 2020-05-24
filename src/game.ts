@@ -5,16 +5,16 @@ import { SplitPanelContainerWidget } from "./ansi/widgets/SplitPanelContainerWid
 import { LabelWidget } from "./ansi/widgets/LabelWidget.ts";
 
 const p1 = new CharacterWidget(
-  BlockElements.FullBlock,
-  AnsiColor.Red,
+  "@",
+  AnsiColor.BrightRed,
   AnsiColor.Black,
 );
 p1.x = 3;
 p1.y = 3;
 
 const p2 = new CharacterWidget(
-  BlockElements.FullBlock,
-  AnsiColor.Blue,
+  "@",
+  AnsiColor.BrightBlue,
   AnsiColor.Black,
 );
 p2.x = 13;
@@ -22,13 +22,13 @@ p2.y = 3;
 
 const npcs: CharacterWidget[] = [
   new CharacterWidget(
-    BlockElements.FullBlock,
-    AnsiColor.BrightYellow,
+    "@",
+    AnsiColor.Yellow,
     AnsiColor.Black,
   ),
   new CharacterWidget(
-    BlockElements.FullBlock,
-    AnsiColor.BrightGreen,
+    "@",
+    AnsiColor.Green,
     AnsiColor.Black,
   ),
 ];
@@ -52,15 +52,19 @@ mainUI.rightPanel.backColor = AnsiColor.BrightBlack;
 const playingBox = mainUI.leftPanel;
 
 mainUI.leftPanel.title = " Map ";
-mainUI.leftPanel.borderForeColor = AnsiColor.BrightGreen;
-mainUI.leftPanel.titleBackColor = AnsiColor.Green;
-mainUI.leftPanel.borderBackColor = AnsiColor.Green;
+mainUI.leftPanel.titleForeColor = AnsiColor.BrightWhite;
+mainUI.leftPanel.titleBackColor = AnsiColor.Magenta;
+mainUI.leftPanel.borderForeColor = AnsiColor.BrightMagenta;
+mainUI.leftPanel.borderBackColor = AnsiColor.Magenta;
+mainUI.leftPanel.backColor = AnsiColor.Black;
 
 mainUI.rightPanel.title = " Stats ";
+mainUI.rightPanel.titleForeColor = AnsiColor.BrightWhite;
 mainUI.rightPanel.titleBackColor = AnsiColor.Blue;
 mainUI.rightPanel.borderForeColor = AnsiColor.BrightBlue;
 mainUI.rightPanel.borderBackColor = AnsiColor.Blue;
 mainUI.rightPanel.backColor = AnsiColor.Blue;
+mainUI.rightPanel.childrenLayout = { type: "vertical", spacing: 1 };
 
 export function initGame(engine: Engine) {
   characters.forEach((c) => c.parent = playingBox);

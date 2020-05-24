@@ -162,12 +162,19 @@ export interface WidgetLayout {
   ) => void;
 }
 
+export interface ChildrenLayout {
+  type: "absolute" | "vertical" | "horizontal";
+  spacing?: number;
+}
+
 export interface WidgetContainer extends Widget {
   readonly children: Widget[];
   readonly innerX: number;
   readonly innerY: number;
   readonly innerWidth: number;
   readonly innerHeight: number;
+  childrenLayout: ChildrenLayout | null;
+  setChildrenLayout(layout: ChildrenLayout | null): Widget;
 }
 
 export interface Widget {
