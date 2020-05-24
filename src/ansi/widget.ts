@@ -3,8 +3,8 @@ import { Widget, AnsiContext, WidgetContainer } from "./types.ts";
 export abstract class BaseWidget implements Widget {
   private _x: number = 0;
   private _y: number = 0;
-  private _width: number = 1;
-  private _height: number = 1;
+  private _width: number = 0;
+  private _height: number = 0;
   private _parent: WidgetContainer | null = null;
 
   public get x() {

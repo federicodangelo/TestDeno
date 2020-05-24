@@ -5,6 +5,7 @@ import { buildEngine, destroyEngine } from "./ansi/engine.ts";
 import { CharacterWidget } from "./ansi/widgets/CharacterWidget.ts";
 import { BoxContainerWidget } from "./ansi/widgets/BoxContainerWidget.ts";
 import { consoleSize, clearScreen } from "./ansi/ansi.ts";
+import { LabelWidget } from "./ansi/widgets/LabelWidget.ts";
 
 const engine = await buildEngine();
 
@@ -58,6 +59,24 @@ const playingBox = new BoxContainerWidget(
 characters.forEach((c) => c.parent = playingBox);
 engine.addWidget(playingBox);
 
+const fpsLabel = new LabelWidget("fps: ", AnsiColor.White, AnsiColor.Black);
+
+engine.addWidget(fpsLabel);
+
+let frames = 0;
+let framesTime = performance.now();
+
+function updateFps() {
+  const now = performance.now();
+  frames++;
+  if (now - framesTime > 1000) {
+    const fps = frames / ((now - framesTime) / 1000);
+    fpsLabel.text = "fps: " + fps.toFixed(2);
+    framesTime = now;
+    frames = 0;
+  }
+}
+
 async function draw() {
   playingBox.width = consoleSize.width;
   playingBox.height = consoleSize.height;
@@ -65,6 +84,7 @@ async function draw() {
 }
 
 function update() {
+  updateFps();
   for (let i = 0; i < npcs.length; i++) {
     const npc = npcs[i];
     switch (Math.floor(Math.random() * 4)) {
@@ -132,11 +152,15 @@ function update() {
 }
 
 while (running) {
+  const start = performance.now();
+
   await draw();
 
   update();
 
-  await delay(50);
+  const end = performance.now();
+
+  await delay(Math.max(10, 50 - (end - start)));
 }
 
 destroyEngine(engine);

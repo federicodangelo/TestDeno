@@ -8,6 +8,7 @@ export class CharacterWidget extends BaseWidget {
 
   constructor(char: string, foreColor: AnsiColor, backColor: AnsiColor) {
     super();
+    this.width = this.height = 1;
     this.char = char;
     this.foreColor = foreColor;
     this.backColor = backColor;

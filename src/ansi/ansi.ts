@@ -33,6 +33,7 @@ export function clearScreen() {
 }
 
 export async function updateConsoleSize(): Promise<boolean> {
+  drawAscii(`${ESC}?25l`); //hide cursor
   drawAscii(`${ESC}s`); //save cursor position
   drawAscii(`${ESC}999;999H`); //Move to huge bottom / right position
   drawAscii(`${ESC}6n`); //request cursor position
@@ -41,7 +42,7 @@ export async function updateConsoleSize(): Promise<boolean> {
   let line = readInputBetween(ESC, "R");
 
   while (line.length === 0) {
-    await delay(1);
+    await delay(0);
     line = readInputBetween(ESC, "R");
   }
 
