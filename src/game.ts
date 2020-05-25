@@ -1,6 +1,6 @@
-import { CharacterWidget } from "./ansi/widgets/CharacterWidget.ts";
-import { AnsiColor, Engine } from "./ansi/types.ts";
-import { SplitPanelContainerWidget } from "./ansi/widgets/SplitPanelContainerWidget.ts";
+import { CharacterWidget } from "./engine/widgets/CharacterWidget.ts";
+import { AnsiColor, Engine } from "./engine/types.ts";
+import { SplitPanelContainerWidget } from "./engine/widgets/SplitPanelContainerWidget.ts";
 
 const p1 = new CharacterWidget(
   "@",

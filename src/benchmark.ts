@@ -4,11 +4,11 @@ import {
   clearScreen,
   requestUpdateConsoleSize,
   getConsoleSizeFromInput,
-} from "./ansi/ansi.ts";
-import { readInput, updateInput } from "./ansi/input.ts";
+} from "./engine/ansi.ts";
+import { readInput, updateInput } from "./engine/input.ts";
 import { delay } from "./utils.ts";
-import { AnsiColor, BlockElements, Size } from "./ansi/types.ts";
-import { AnsiContextImpl } from "./ansi/context.ts";
+import { AnsiColor, BlockElements, Size } from "./engine/types.ts";
+import { AnsiContextImpl } from "./engine/context.ts";
 
 initAnsi();
 

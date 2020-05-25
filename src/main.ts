@@ -1,8 +1,8 @@
 import { delay } from "./utils.ts";
-import { AnsiColor } from "./ansi/types.ts";
-import { buildEngine, destroyEngine } from "./ansi/engine.ts";
-import { clearScreen } from "./ansi/ansi.ts";
-import { LabelWidget } from "./ansi/widgets/LabelWidget.ts";
+import { AnsiColor } from "./engine/types.ts";
+import { buildEngine, destroyEngine } from "./engine/engine.ts";
+import { clearScreen } from "./engine/ansi.ts";
+import { LabelWidget } from "./engine/widgets/LabelWidget.ts";
 import { initGame, updateGame, mainUI } from "./game.ts";
 
 const engine = await buildEngine();
