@@ -1,21 +1,30 @@
 import {
   initAnsi,
   shutdownAnsi,
-  consoleSize,
   clearScreen,
   requestUpdateConsoleSize,
-  updateConsoleSizeFromInput,
+  getConsoleSizeFromInput,
 } from "./ansi/ansi.ts";
 import { readInput, updateInput } from "./ansi/input.ts";
 import { delay } from "./utils.ts";
-import { AnsiColor, BlockElements } from "./ansi/types.ts";
+import { AnsiColor, BlockElements, Size } from "./ansi/types.ts";
 import { AnsiContextImpl } from "./ansi/context.ts";
 
-await initAnsi();
+initAnsi();
 
 clearScreen();
 
 const context = new AnsiContextImpl();
+
+const consoleSize = new Size();
+
+requestUpdateConsoleSize();
+let tmp = getConsoleSizeFromInput();
+while (tmp === null) {
+  await delay(10);
+  tmp = getConsoleSizeFromInput();
+}
+consoleSize.copyFrom(tmp);
 
 context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
 
@@ -75,19 +84,18 @@ for (let i = 0; i < totalFrames && !cancel; i++) {
 
   requestUpdateConsoleSize();
   updateInput();
-  updateConsoleSizeFromInput();
+  const newConsoleSize = getConsoleSizeFromInput();
+  if (newConsoleSize !== null) consoleSize.copyFrom(newConsoleSize);
   const input = readInput();
-  if (input) {
-    const code = input.charCodeAt(0);
-    if (code >= 32) {
-      //Only visible chars
-      fillChar = input[0];
-      if (fillChar === "z") cancel = true;
-    }
+  if (input && input.indexOf("z") >= 0) cancel = true;
+  if (input && input.charCodeAt(0) >= 32) {
+    //Only visible chars
+    fillChar = input[0];
   }
   await delay(1);
   frameNumber++;
 }
+
 const endTime = performance.now();
 
 if (!cancel && frameNumber > 0) {

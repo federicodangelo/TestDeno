@@ -3,11 +3,13 @@
   "scripts": {
     "dev": {
       "cmd": "deno run src/main.ts",
-      "unstable": true
+      "unstable": true,
+      "allow": ["hrtime"]
     },
     "bench": {
       "cmd": "deno run src/benchmark.ts",
-      "unstable": true
+      "unstable": true,
+      "allow": ["hrtime"]
     }
   }
 }

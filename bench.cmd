@@ -1,1 +1,1 @@
-deno run --unstable src/benchmark.ts
+deno run --unstable --allow-hrtime src/benchmark.ts

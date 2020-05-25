@@ -118,6 +118,8 @@ export const AnsiColorCodesBack = [
 ];
 
 export interface AnsiContext {
+  isVisible(x: number, y: number, width: number, height: number): boolean;
+
   pushTransform(x: number, y: number): void;
   popTransform(): void;
 
@@ -140,7 +142,7 @@ export interface AnsiContext {
     y: number,
     width: number,
     height: number,
-    char: string
+    char: string,
   ): AnsiContext;
 }
 
@@ -152,12 +154,12 @@ export interface WidgetLayout {
   customSizeFn?: (
     widget: Widget,
     parentWidth: number,
-    parentHeight: number
+    parentHeight: number,
   ) => void;
   customPositionFn?: (
     widget: Widget,
     parentWidth: number,
-    parentHeight: number
+    parentHeight: number,
   ) => void;
 }
 
@@ -177,6 +179,7 @@ export interface WidgetContainer extends Widget {
 }
 
 export interface Widget {
+  engine: Engine | null;
   x: number;
   y: number;
   width: number;
@@ -186,6 +189,8 @@ export interface Widget {
   draw(context: AnsiContext): void;
   layout: WidgetLayout | null;
   setLayout(layout: WidgetLayout | null): Widget;
+  getBoundingBox(): Rect;
+  invalidate(): void;
 }
 
 export class Point {
@@ -200,6 +205,22 @@ export class Point {
   public set(x: number, y: number) {
     this.x = x;
     this.y = y;
+    return this;
+  }
+
+  public copyFrom(p: Point) {
+    this.x = p.x;
+    this.y = p.y;
+    return this;
+  }
+
+  public equals(p: Point) {
+    return this.x === p.x &&
+      this.y === p.y;
+  }
+
+  public clone() {
+    return new Point(this.x, this.y);
   }
 }
 
@@ -215,6 +236,22 @@ export class Size {
   public set(width: number, height: number) {
     this.width = width;
     this.height = height;
+    return this;
+  }
+
+  public copyFrom(size: Size) {
+    this.width = size.width;
+    this.height = size.height;
+    return this;
+  }
+
+  public equals(size: Size) {
+    return this.width === size.width &&
+      this.height === size.height;
+  }
+
+  public clone() {
+    return new Size(this.width, this.height);
   }
 }
 
@@ -224,11 +261,19 @@ export class Rect {
   public width: number;
   public height: number;
 
+  public get x1() {
+    return this.x + this.width;
+  }
+
+  public get y1() {
+    return this.y + this.height;
+  }
+
   public constructor(
     x: number = 0,
     y: number = 0,
     width: number = 0,
-    height: number = 0
+    height: number = 0,
   ) {
     this.x = x;
     this.y = y;
@@ -241,6 +286,45 @@ export class Rect {
     this.y = y;
     this.width = width;
     this.height = height;
+    return this;
+  }
+
+  public copyFrom(rect: Rect) {
+    this.x = rect.x;
+    this.y = rect.y;
+    this.width = rect.width;
+    this.height = rect.height;
+    return this;
+  }
+
+  public equals(rect: Rect) {
+    return this.x === rect.x &&
+      this.y === rect.y &&
+      this.width === rect.width &&
+      this.height === rect.height;
+  }
+
+  public intersects(rect: Rect) {
+    return !(this.x1 < rect.x ||
+      this.y1 < rect.y ||
+      this.x > rect.x1 ||
+      this.y > rect.y1);
+  }
+
+  public expand(rect: Rect) {
+    const x0 = Math.min(this.x, rect.x);
+    const y0 = Math.min(this.y, rect.y);
+    const x1 = Math.max(this.x1, rect.x1);
+    const y1 = Math.max(this.y1, rect.y1);
+
+    this.x = x0;
+    this.y = y0;
+    this.width = x1 - x0;
+    this.height = y1 - y0;
+  }
+
+  public minDistanceTo(rect: Rect) {
+    return Math.min();
   }
 
   public clone() {
@@ -254,4 +338,5 @@ export interface Engine {
   addWidget(widget: Widget): void;
   removeWidget(widget: Widget): void;
   readInput(): string;
+  invalidateRect(rect: Rect): void;
 }

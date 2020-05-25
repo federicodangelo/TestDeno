@@ -44,8 +44,8 @@ export class AnsiContextImpl implements AnsiContext {
     this.offset = 0;
     this.x = 0;
     this.y = 0;
-    this.tx = x;
-    this.ty = y;
+    this.tx = 0;
+    this.ty = 0;
     this.lastDrawX = NaN;
     this.lastDrawY = NaN;
     this.lastDrawForeColor = null;
@@ -58,7 +58,9 @@ export class AnsiContextImpl implements AnsiContext {
   public endDraw() {
     if (useCp437) {
       const codes8 = new Uint8Array(this.offset);
-      codes8.set(this.buffer);
+      for (let i = 0; i < this.offset; i++) {
+        codes8[i] = this.buffer[i];
+      }
       Deno.stdout.writeSync(codes8);
     } else {
       const str = String.fromCharCode(...this.buffer.slice(0, this.offset));
@@ -94,7 +96,19 @@ export class AnsiContextImpl implements AnsiContext {
 
   popClip(): void {
     const p = this.clipStack.pop();
-    if (p) this.clip.set(p.x, p.y, p.width, p.height);
+    if (p) this.clip.copyFrom(p);
+  }
+
+  public isVisible(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+  ): boolean {
+    return !(this.tx + x + width < this.clip.x ||
+      this.ty + y + height < this.clip.y ||
+      this.tx + x > this.clip.x + this.clip.width ||
+      this.ty + y > this.clip.y + this.clip.height);
   }
 
   public moveCursorTo(x: number, y: number) {
@@ -123,7 +137,7 @@ export class AnsiContextImpl implements AnsiContext {
         this.foreColor,
         this.backColor,
         this.tx + this.x,
-        this.ty + this.y
+        this.ty + this.y,
       );
       this.x++;
     }
@@ -135,14 +149,14 @@ export class AnsiContextImpl implements AnsiContext {
     foreColor: AnsiColor,
     backColor: AnsiColor,
     screenX: number,
-    screenY: number
+    screenY: number,
   ) {
     const clip = this.clip;
 
     if (
       screenX >= clip.x &&
-      screenX < clip.x + clip.width &&
       screenY >= clip.y &&
+      screenX < clip.x + clip.width &&
       screenY < clip.y + clip.height
     ) {
       if (this.lastDrawX !== screenX || this.lastDrawY !== screenY) {
@@ -223,7 +237,7 @@ export class AnsiContextImpl implements AnsiContext {
     y: number,
     width: number,
     height: number,
-    char: string
+    char: string,
   ) {
     for (let i = y; i < y + height; i++) {
       this.moveCursorTo(x, i);

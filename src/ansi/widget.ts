@@ -1,4 +1,11 @@
-import { Widget, AnsiContext, WidgetContainer, WidgetLayout } from "./types.ts";
+import {
+  Widget,
+  AnsiContext,
+  WidgetContainer,
+  WidgetLayout,
+  Engine,
+  Rect,
+} from "./types.ts";
 
 export abstract class BaseWidget implements Widget {
   private _x: number = 0;
@@ -6,12 +13,25 @@ export abstract class BaseWidget implements Widget {
   private _width: number = 0;
   private _height: number = 0;
   private _parent: WidgetContainer | null = null;
+  private _engine: Engine | null = null;
+  private _boundingBox: Rect = new Rect();
+  private _boundingBoxDirty: boolean = true;
 
   public layout: WidgetLayout | null = null;
 
   public setLayout(layout: WidgetLayout | null) {
     this.layout = layout;
     return this;
+  }
+
+  public get engine() {
+    return this._engine;
+  }
+
+  public set engine(val: Engine | null) {
+    if (val !== this._engine) {
+      this._engine = val;
+    }
   }
 
   public get x() {
@@ -71,12 +91,17 @@ export abstract class BaseWidget implements Widget {
       this._parent = v;
       if (this._parent !== null) {
         this._parent.children.push(this);
+        this.engine = this._parent.engine;
+      } else {
+        this.engine = null;
       }
       this.onTransformChanged();
     }
   }
 
   private onTransformChanged() {
+    this._boundingBoxDirty = true;
+    this.invalidate();
   }
 
   public updateLayout(parentWidth: number, parentHeight: number): void {
@@ -115,6 +140,7 @@ export abstract class BaseWidget implements Widget {
   }
 
   public draw(context: AnsiContext): void {
+    if (!context.isVisible(this.x, this.y, this.width, this.height)) return;
     context.pushTransform(this.x, this.y);
     context.pushClip(0, 0, this.width, this.height);
     context.moveCursorTo(0, 0);
@@ -124,4 +150,35 @@ export abstract class BaseWidget implements Widget {
   }
 
   protected abstract drawSelf(context: AnsiContext): void;
+
+  public getBoundingBox() {
+    if (this._boundingBoxDirty) {
+      this._boundingBox.set(this._x, this._y, this._width, this._height);
+      let p = this._parent;
+      while (p !== null) {
+        this._boundingBox.x += p.x + p.innerX;
+        this._boundingBox.y += p.y + p.innerY;
+        p = p.parent;
+      }
+      this._boundingBoxDirty = false;
+    }
+
+    return this._boundingBox;
+  }
+
+  private lastInvalidatedRect = new Rect();
+
+  public invalidate() {
+    const engine = this.engine;
+    const bbox = this.getBoundingBox();
+    if (
+      this.lastInvalidatedRect.width !== 0 &&
+      this.lastInvalidatedRect.height !== 0 &&
+      !this.lastInvalidatedRect.equals(bbox)
+    ) {
+      engine?.invalidateRect(this.lastInvalidatedRect);
+    }
+    engine?.invalidateRect(bbox);
+    this.lastInvalidatedRect.copyFrom(bbox);
+  }
 }

@@ -1,4 +1,6 @@
 {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "justjavac.vscode-deno"
+    "editor.defaultFormatter": "justjavac.vscode-deno",
+    "deno.enable": true,
+    "deno.unstable": true,
 }

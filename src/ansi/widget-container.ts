@@ -1,8 +1,8 @@
 import {
   AnsiContext,
   WidgetContainer,
-  AnsiColor,
   ChildrenLayout,
+  Engine,
 } from "./types.ts";
 import { BaseWidget } from "./widget.ts";
 
@@ -17,6 +17,19 @@ export abstract class BaseWidgetContainer extends BaseWidget
   public setChildrenLayout(layout: ChildrenLayout | null) {
     this.childrenLayout = layout;
     return this;
+  }
+
+  public get engine() {
+    return super.engine;
+  }
+
+  public set engine(val: Engine | null) {
+    if (val !== this.engine) {
+      super.engine = val;
+      for (let i = 0; i < this._children.length; i++) {
+        this._children[i].engine = val;
+      }
+    }
   }
 
   public get innerX() {
@@ -84,6 +97,7 @@ export abstract class BaseWidgetContainer extends BaseWidget
   }
 
   public draw(context: AnsiContext): void {
+    if (!context.isVisible(this.x, this.y, this.width, this.height)) return;
     context.pushTransform(this.x, this.y);
     context.pushClip(0, 0, this.width, this.height);
     context.moveCursorTo(0, 0);

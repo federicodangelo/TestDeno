@@ -1,1 +1,1 @@
-deno run --unstable src/main.ts
+deno run --unstable --allow-hrtime src/main.ts
