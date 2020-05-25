@@ -4,15 +4,17 @@ import {
   requestUpdateConsoleSize,
   getConsoleSizeFromInput,
   getMouse as getMouseFromInput,
-} from "./ansi.ts";
+  getAnsiNativeContext,
+  clearScreen,
+} from "./native/ansi.ts";
 import { Engine, Widget, Size, Point, Rect } from "./types.ts";
-import { AnsiContextImpl as EngineContextImpl } from "./context.ts";
-import { updateInput, readInput } from "./input.ts";
+import { EngineContextImpl } from "./context.ts";
+import { updateInput, readInput } from "./native/input.ts";
 import { delay } from "../utils.ts";
 
 export class EngineImpl implements Engine {
   private children: Widget[] = [];
-  private context = new EngineContextImpl();
+  private context = new EngineContextImpl(getAnsiNativeContext());
   private consoleSize = new Size();
   private mousePosition = new Point();
   private invalidRects: Rect[] = [];
@@ -137,6 +139,7 @@ export class EngineImpl implements Engine {
 
 export async function buildEngine() {
   initAnsi();
+  clearScreen();
   const engine = new EngineImpl();
   await engine.init();
   return engine;

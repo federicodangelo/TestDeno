@@ -1,12 +1,12 @@
 import { BaseWidget } from "../widget.ts";
-import { AnsiColor, DrawContext } from "../types.ts";
+import { Color, DrawContext } from "../types.ts";
 
 export class CharacterWidget extends BaseWidget {
   public char: string;
-  public foreColor: AnsiColor;
-  public backColor: AnsiColor;
+  public foreColor: Color;
+  public backColor: Color;
 
-  constructor(char: string, foreColor: AnsiColor, backColor: AnsiColor) {
+  constructor(char: string, foreColor: Color, backColor: Color) {
     super();
     this.width = this.height = 1;
     this.char = char;

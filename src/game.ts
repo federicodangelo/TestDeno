@@ -1,19 +1,19 @@
 import { CharacterWidget } from "./engine/widgets/CharacterWidget.ts";
-import { AnsiColor, Engine } from "./engine/types.ts";
+import { Color, Engine } from "./engine/types.ts";
 import { SplitPanelContainerWidget } from "./engine/widgets/SplitPanelContainerWidget.ts";
 
 const p1 = new CharacterWidget(
   "@",
-  AnsiColor.BrightRed,
-  AnsiColor.Black,
+  Color.BrightRed,
+  Color.Black,
 );
 p1.x = 3;
 p1.y = 3;
 
 const p2 = new CharacterWidget(
   "@",
-  AnsiColor.BrightBlue,
-  AnsiColor.Black,
+  Color.BrightBlue,
+  Color.Black,
 );
 p2.x = 13;
 p2.y = 3;
@@ -21,13 +21,13 @@ p2.y = 3;
 const npcs: CharacterWidget[] = [
   new CharacterWidget(
     "@",
-    AnsiColor.Yellow,
-    AnsiColor.Black,
+    Color.Yellow,
+    Color.Black,
   ),
   new CharacterWidget(
     "@",
-    AnsiColor.Green,
-    AnsiColor.Black,
+    Color.Green,
+    Color.Black,
   ),
 ];
 
@@ -45,23 +45,23 @@ mainUI.layout = {
 mainUI.splitPercent = 75;
 
 mainUI.rightPanel.border = 2;
-mainUI.rightPanel.backColor = AnsiColor.BrightBlack;
+mainUI.rightPanel.backColor = Color.BrightBlack;
 
 const playingBox = mainUI.leftPanel;
 
 mainUI.leftPanel.title = " Map ";
-mainUI.leftPanel.titleForeColor = AnsiColor.BrightWhite;
-mainUI.leftPanel.titleBackColor = AnsiColor.Magenta;
-mainUI.leftPanel.borderForeColor = AnsiColor.BrightMagenta;
-mainUI.leftPanel.borderBackColor = AnsiColor.Magenta;
-mainUI.leftPanel.backColor = AnsiColor.Black;
+mainUI.leftPanel.titleForeColor = Color.BrightWhite;
+mainUI.leftPanel.titleBackColor = Color.Magenta;
+mainUI.leftPanel.borderForeColor = Color.BrightMagenta;
+mainUI.leftPanel.borderBackColor = Color.Magenta;
+mainUI.leftPanel.backColor = Color.Black;
 
 mainUI.rightPanel.title = " Stats ";
-mainUI.rightPanel.titleForeColor = AnsiColor.BrightWhite;
-mainUI.rightPanel.titleBackColor = AnsiColor.Blue;
-mainUI.rightPanel.borderForeColor = AnsiColor.BrightBlue;
-mainUI.rightPanel.borderBackColor = AnsiColor.Blue;
-mainUI.rightPanel.backColor = AnsiColor.Blue;
+mainUI.rightPanel.titleForeColor = Color.BrightWhite;
+mainUI.rightPanel.titleBackColor = Color.Blue;
+mainUI.rightPanel.borderForeColor = Color.BrightBlue;
+mainUI.rightPanel.borderBackColor = Color.Blue;
+mainUI.rightPanel.backColor = Color.Blue;
 mainUI.rightPanel.childrenLayout = { type: "vertical", spacing: 1 };
 
 export function initGame(engine: Engine) {

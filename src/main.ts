@@ -1,13 +1,10 @@
 import { delay } from "./utils.ts";
-import { AnsiColor } from "./engine/types.ts";
+import { Color } from "./engine/types.ts";
 import { buildEngine, destroyEngine } from "./engine/engine.ts";
-import { clearScreen } from "./engine/ansi.ts";
 import { LabelWidget } from "./engine/widgets/LabelWidget.ts";
 import { initGame, updateGame, mainUI } from "./game.ts";
 
 const engine = await buildEngine();
-
-clearScreen();
 
 let running = true;
 
@@ -15,14 +12,14 @@ initGame(engine);
 
 const fpsLabel = new LabelWidget(
   "FPS: 0.00\nRender Time: 0.00ms",
-  AnsiColor.White,
-  AnsiColor.Blue,
+  Color.White,
+  Color.Blue,
 );
 
 const statsLabel = new LabelWidget(
   "Players: 2\nNpcs: 2",
-  AnsiColor.White,
-  AnsiColor.Blue,
+  Color.White,
+  Color.Blue,
 );
 
 fpsLabel.parent = mainUI.rightPanel;

@@ -1,22 +1,22 @@
-import { AnsiColor, DrawContext } from "../types.ts";
+import { Color, DrawContext } from "../types.ts";
 import { BaseWidgetContainer } from "../widget-container.ts";
 
 export class BoxContainerWidget extends BaseWidgetContainer {
-  public backColor: AnsiColor;
-  public foreColor: AnsiColor;
-  public borderForeColor: AnsiColor;
-  public borderBackColor: AnsiColor;
+  public backColor: Color;
+  public foreColor: Color;
+  public borderForeColor: Color;
+  public borderBackColor: Color;
   public fillChar: string;
   public title: string = "";
-  public titleForeColor = AnsiColor.White;
-  public titleBackColor = AnsiColor.Black;
+  public titleForeColor = Color.White;
+  public titleBackColor = Color.Black;
 
   constructor(
     border = 1,
-    borderForeColor = AnsiColor.White,
-    borderBackColor = AnsiColor.Black,
-    foreColor = AnsiColor.White,
-    backColor = AnsiColor.Black,
+    borderForeColor = Color.White,
+    borderBackColor = Color.Black,
+    foreColor = Color.White,
+    backColor = Color.Black,
     fillChar = " ",
   ) {
     super();

@@ -1,9 +1,9 @@
 import { BaseWidget } from "../widget.ts";
-import { AnsiColor, DrawContext } from "../types.ts";
+import { Color, DrawContext } from "../types.ts";
 
 export class LabelWidget extends BaseWidget {
-  public foreColor: AnsiColor;
-  public backColor: AnsiColor;
+  public foreColor: Color;
+  public backColor: Color;
 
   private _text: string = "";
   private _lines: string[] = [];
@@ -25,7 +25,7 @@ export class LabelWidget extends BaseWidget {
     return this._text;
   }
 
-  constructor(text: string, foreColor: AnsiColor, backColor: AnsiColor) {
+  constructor(text: string, foreColor: Color, backColor: Color) {
     super();
     this.height = 1;
     this.text = text;

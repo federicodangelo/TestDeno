@@ -4,17 +4,18 @@ import {
   clearScreen,
   requestUpdateConsoleSize,
   getConsoleSizeFromInput,
+  getAnsiNativeContext,
 } from "./engine/ansi.ts";
 import { readInput, updateInput } from "./engine/input.ts";
 import { delay } from "./utils.ts";
-import { AnsiColor, BlockElements, Size } from "./engine/types.ts";
-import { AnsiContextImpl } from "./engine/context.ts";
+import { Color, BlockElements, Size } from "./engine/types.ts";
+import { EngineContextImpl } from "./engine/context.ts";
 
 initAnsi();
 
 clearScreen();
 
-const context = new AnsiContextImpl();
+const context = new EngineContextImpl(getAnsiNativeContext());
 
 const consoleSize = new Size();
 
@@ -28,26 +29,26 @@ consoleSize.copyFrom(tmp);
 
 context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
 
-context.color(AnsiColor.Blue, AnsiColor.Black).text("Starting test\n");
+context.color(Color.Blue, Color.Black).text("Starting test\n");
 
-context.color(AnsiColor.Blue, AnsiColor.Black).text("Console dimensions:");
+context.color(Color.Blue, Color.Black).text("Console dimensions:");
 
-context.color(AnsiColor.Black, AnsiColor.White).text(
+context.color(Color.Black, Color.White).text(
   `${consoleSize.width}x${consoleSize.height}`,
 );
 
-context.color(AnsiColor.White, AnsiColor.Black).text("\n");
+context.color(Color.White, Color.Black).text("\n");
 
 context.endDraw();
 
 await delay(1000);
 
-const fillColors: AnsiColor[] = [
-  AnsiColor.BrightRed,
-  AnsiColor.BrightCyan,
-  AnsiColor.BrightBlue,
-  AnsiColor.BrightGreen,
-  AnsiColor.BrightYellow,
+const fillColors: Color[] = [
+  Color.BrightRed,
+  Color.BrightCyan,
+  Color.BrightBlue,
+  Color.BrightGreen,
+  Color.BrightYellow,
 ];
 
 let frameNumber = 0;
@@ -61,7 +62,7 @@ function drawScreen(c: number) {
     for (let x = 1; x < consoleSize.width - 1; x++) {
       context.color(
         fillColors[(y + x + frameNumber) % fillColors.length],
-        AnsiColor.Black,
+        Color.Black,
       ).char(
         c,
       );
@@ -101,7 +102,7 @@ const endTime = performance.now();
 if (!cancel && frameNumber > 0) {
   clearScreen();
   context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
-  context.color(AnsiColor.Green, AnsiColor.Black).text(
+  context.color(Color.Green, Color.Black).text(
     `Time to fill screen ${frameNumber} times: ${endTime -
       startTime}ms, fps:${frameNumber / ((endTime - startTime) / 1000)}\n`,
   );

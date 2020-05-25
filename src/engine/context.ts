@@ -1,19 +1,13 @@
 import {
-  AnsiColor,
-  AnsiColorCodesFront,
-  AnsiColorCodesBack,
-  DoubleLineElements,
-  ESC,
+  Color,
+  SpecialChar,
   Rect,
   Point,
-  useCp437,
   EngineContext,
+  NativeContext,
 } from "./types.ts";
 
-export class AnsiContextImpl implements EngineContext {
-  private buffer: number[] = [];
-  private offset = 0;
-
+export class EngineContextImpl implements EngineContext {
   private bounds = new Rect();
   private clip = new Rect();
   private tx: number = 0;
@@ -21,19 +15,16 @@ export class AnsiContextImpl implements EngineContext {
 
   private x: number = 0;
   private y: number = 0;
-  private foreColor = AnsiColor.White;
-  private backColor = AnsiColor.Black;
-
-  private lastDrawForeColor: AnsiColor | null = null;
-  private lastDrawBackColor: AnsiColor | null = null;
-  private lastDrawX: number = -1;
-  private lastDrawY: number = -1;
+  private foreColor = Color.White;
+  private backColor = Color.Black;
 
   private transformsStack: Point[] = [];
   private clipStack: Rect[] = [];
 
-  public constructor(capacity = 8192) {
-    this.buffer.fill(0, 0, capacity);
+  private nativeContext: NativeContext;
+
+  public constructor(nativeContext: NativeContext) {
+    this.nativeContext = nativeContext;
   }
 
   public beginDraw(x: number, y: number, width: number, height: number) {
@@ -41,32 +32,15 @@ export class AnsiContextImpl implements EngineContext {
     this.clip.set(x, y, width, height);
     this.transformsStack.length = 0;
     this.clipStack.length = 0;
-    this.offset = 0;
     this.x = 0;
     this.y = 0;
     this.tx = 0;
     this.ty = 0;
-    this.lastDrawX = NaN;
-    this.lastDrawY = NaN;
-    this.lastDrawForeColor = null;
-    this.lastDrawBackColor = null;
-    this.offset = 0;
+    this.nativeContext.reset();
   }
 
-  private encoder = new TextEncoder();
-
   public endDraw() {
-    if (useCp437) {
-      const codes8 = new Uint8Array(this.offset);
-      for (let i = 0; i < this.offset; i++) {
-        codes8[i] = this.buffer[i];
-      }
-      Deno.stdout.writeSync(codes8);
-    } else {
-      const str = String.fromCharCode(...this.buffer.slice(0, this.offset));
-      Deno.stdout.writeSync(this.encoder.encode(str));
-    }
-    this.offset = 0;
+    this.nativeContext.apply();
   }
 
   pushTransform(x: number, y: number) {
@@ -117,15 +91,15 @@ export class AnsiContextImpl implements EngineContext {
     return this;
   }
 
-  public color(foreColor: AnsiColor, backColor: AnsiColor) {
+  public color(foreColor: Color, backColor: Color) {
     this.foreColor = foreColor;
     this.backColor = backColor;
     return this;
   }
 
   public resetColor() {
-    this.foreColor = AnsiColor.White;
-    this.backColor = AnsiColor.Black;
+    this.foreColor = Color.White;
+    this.backColor = Color.Black;
     return this;
   }
 
@@ -137,13 +111,20 @@ export class AnsiContextImpl implements EngineContext {
   }
 
   public char(code: number) {
-    this.setChar(
-      code,
-      this.foreColor,
-      this.backColor,
-      this.tx + this.x,
-      this.ty + this.y,
-    );
+    const screenX = this.x + this.tx;
+    const screenY = this.y + this.ty;
+    if (
+      screenX >= this.clip.x && screenX < this.clip.x1 &&
+      screenY >= this.clip.y && screenY < this.clip.y1
+    ) {
+      this.nativeContext.setChar(
+        code,
+        this.foreColor,
+        this.backColor,
+        screenX,
+        screenY,
+      );
+    }
     this.x++;
     return this;
   }
@@ -155,67 +136,30 @@ export class AnsiContextImpl implements EngineContext {
     return this;
   }
 
-  private setChar(
-    char: number,
-    foreColor: AnsiColor,
-    backColor: AnsiColor,
-    screenX: number,
-    screenY: number,
-  ) {
-    const clip = this.clip;
-
+  public specialChar(code: SpecialChar) {
+    const screenX = this.x + this.tx;
+    const screenY = this.y + this.ty;
     if (
-      screenX >= clip.x &&
-      screenY >= clip.y &&
-      screenX < clip.x + clip.width &&
-      screenY < clip.y + clip.height
+      screenX >= this.clip.x && screenX < this.clip.x1 &&
+      screenY >= this.clip.y && screenY < this.clip.y1
     ) {
-      if (this.lastDrawX !== screenX || this.lastDrawY !== screenY) {
-        this.addToBuffer(ESC);
-        this.addToBuffer((screenY + 1).toString());
-        this.addToBuffer(";");
-        this.addToBuffer((screenX + 1).toString());
-        this.addToBuffer("H");
-        this.lastDrawX = screenX;
-        this.lastDrawY = screenY;
-      }
-
-      if (
-        this.lastDrawForeColor !== foreColor ||
-        this.lastDrawBackColor !== backColor
-      ) {
-        this.addToBuffer(ESC);
-        this.addToBuffer(AnsiColorCodesFront[foreColor]);
-        this.addToBuffer(";");
-        this.addToBuffer(AnsiColorCodesBack[backColor]);
-        this.addToBuffer("m");
-        this.lastDrawForeColor = foreColor;
-        this.lastDrawBackColor = backColor;
-      }
-
-      this.addToBufferChar(char);
-      this.lastDrawX++;
+      this.nativeContext.setSpecialChar(
+        code,
+        this.foreColor,
+        this.backColor,
+        screenX,
+        screenY,
+      );
     }
+    this.x++;
+    return this;
   }
 
-  private addToBuffer(str: string) {
-    for (let i = 0; i < str.length; i++) {
-      if (this.offset < this.buffer.length) {
-        this.buffer[this.offset++] = str.charCodeAt(i);
-      } else {
-        this.buffer.push(str.charCodeAt(i));
-        this.offset++;
-      }
+  public specialCharTimes(code: number, times: number) {
+    for (let t = 0; t < times; t++) {
+      this.specialChar(code);
     }
-  }
-
-  private addToBufferChar(char: number) {
-    if (this.offset < this.buffer.length) {
-      this.buffer[this.offset++] = char;
-    } else {
-      this.buffer.push(char);
-      this.offset++;
-    }
+    return this;
   }
 
   public border(x: number, y: number, width: number, height: number) {
@@ -240,19 +184,19 @@ export class AnsiContextImpl implements EngineContext {
     }
 
     this.moveCursorTo(x, y);
-    this.char(DoubleLineElements.CornerTopLeft);
-    this.charTimes(DoubleLineElements.Horizontal, width - 2);
-    this.char(DoubleLineElements.CornerTopRight);
+    this.specialChar(SpecialChar.DoubleCornerTopLeft);
+    this.specialCharTimes(SpecialChar.DoubleHorizontal, width - 2);
+    this.specialChar(SpecialChar.DoubleCornerTopRight);
     for (let i = 0; i < height - 2; i++) {
       this.moveCursorTo(x, y + 1 + i);
-      this.char(DoubleLineElements.Vertical);
+      this.specialChar(SpecialChar.DoubleVertical);
       this.moveCursorTo(x + width - 1, y + 1 + i);
-      this.char(DoubleLineElements.Vertical);
+      this.specialChar(SpecialChar.DoubleVertical);
     }
     this.moveCursorTo(x, y + height - 1);
-    this.char(DoubleLineElements.CornerBottomLeft);
-    this.charTimes(DoubleLineElements.Horizontal, width - 2);
-    this.char(DoubleLineElements.CornerBottomRight);
+    this.specialChar(SpecialChar.DoubleCornerBottomLeft);
+    this.specialCharTimes(SpecialChar.DoubleHorizontal, width - 2);
+    this.specialChar(SpecialChar.DoubleCornerBottomRight);
 
     return this;
   }
@@ -279,9 +223,15 @@ export class AnsiContextImpl implements EngineContext {
 
     const code = char.charCodeAt(0);
 
-    for (let i = y0; i < y1; i++) {
-      for (let j = x0; j < x1; j++) {
-        this.setChar(code, this.foreColor, this.backColor, j, i);
+    for (let screenY = y0; screenY < y1; screenY++) {
+      for (let screenX = x0; screenX < x1; screenX++) {
+        this.nativeContext.setChar(
+          code,
+          this.foreColor,
+          this.backColor,
+          screenX,
+          screenY,
+        );
       }
     }
     return this;
