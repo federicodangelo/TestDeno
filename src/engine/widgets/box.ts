@@ -1,5 +1,5 @@
 import { Color, DrawContext } from "../types.ts";
-import { BaseWidgetContainer } from "../widget-container.ts";
+import { BaseWidgetContainer } from "./widget-container.ts";
 
 export class BoxContainerWidget extends BaseWidgetContainer {
   public backColor: Color;

@@ -3,9 +3,9 @@ import {
   Size,
   Point,
   Color,
-  NativeContext,
   SpecialChar,
 } from "./../types.ts";
+import { NativeContext } from "./types.ts";
 
 const ESC = "\u001b[";
 

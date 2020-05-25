@@ -4,8 +4,8 @@ import {
   Rect,
   Point,
   EngineContext,
-  NativeContext,
 } from "./types.ts";
+import { NativeContext } from "./native/types.ts";
 
 export class EngineContextImpl implements EngineContext {
   private bounds = new Rect();

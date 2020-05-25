@@ -1,4 +1,4 @@
-import { BaseWidget } from "../widget.ts";
+import { BaseWidget } from "./widget.ts";
 import { Color, DrawContext } from "../types.ts";
 
 export class LabelWidget extends BaseWidget {

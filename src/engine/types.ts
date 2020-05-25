@@ -57,41 +57,6 @@ export const enum Color {
   BrightWhite,
 }
 
-export interface DrawContext {
-  moveCursorTo(x: number, y: number): EngineContext;
-
-  color(foreColor: Color, backColor: Color): EngineContext;
-  resetColor(): EngineContext;
-
-  text(str: string): EngineContext;
-
-  char(code: number): EngineContext;
-  charTimes(code: number, times: number): EngineContext;
-
-  specialChar(code: SpecialChar): EngineContext;
-  specialCharTimes(code: SpecialChar, times: number): EngineContext;
-
-  border(x: number, y: number, width: number, height: number): EngineContext;
-
-  fill(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    char: string,
-  ): EngineContext;
-}
-
-export interface EngineContext extends DrawContext {
-  isVisible(x: number, y: number, width: number, height: number): boolean;
-
-  pushTransform(x: number, y: number): void;
-  popTransform(): void;
-
-  pushClip(x: number, y: number, width: number, height: number): void;
-  popClip(): void;
-}
-
 export interface WidgetLayout {
   widthPercent?: number;
   heightPercent?: number;
@@ -278,6 +243,41 @@ export class Rect {
   }
 }
 
+export interface DrawContext {
+  moveCursorTo(x: number, y: number): EngineContext;
+
+  color(foreColor: Color, backColor: Color): EngineContext;
+  resetColor(): EngineContext;
+
+  text(str: string): EngineContext;
+
+  char(code: number): EngineContext;
+  charTimes(code: number, times: number): EngineContext;
+
+  specialChar(code: SpecialChar): EngineContext;
+  specialCharTimes(code: SpecialChar, times: number): EngineContext;
+
+  border(x: number, y: number, width: number, height: number): EngineContext;
+
+  fill(
+    x: number,
+    y: number,
+    width: number,
+    height: number,
+    char: string,
+  ): EngineContext;
+}
+
+export interface EngineContext extends DrawContext {
+  isVisible(x: number, y: number, width: number, height: number): boolean;
+
+  pushTransform(x: number, y: number): void;
+  popTransform(): void;
+
+  pushClip(x: number, y: number, width: number, height: number): void;
+  popClip(): void;
+}
+
 export interface Engine {
   draw(): void;
   update(): void;
@@ -285,23 +285,4 @@ export interface Engine {
   removeWidget(widget: Widget): void;
   readInput(): string;
   invalidateRect(rect: Rect): void;
-}
-
-export interface NativeContext {
-  reset(): void;
-  setChar(
-    char: number,
-    foreColor: Color,
-    backColor: Color,
-    x: number,
-    y: number,
-  ): void;
-  setSpecialChar(
-    char: SpecialChar,
-    foreColor: Color,
-    backColor: Color,
-    x: number,
-    y: number,
-  ): void;
-  apply(): void;
 }

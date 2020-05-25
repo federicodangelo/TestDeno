@@ -12,7 +12,7 @@ import { EngineContextImpl } from "./context.ts";
 import { updateInput, readInput } from "./native/input.ts";
 import { delay } from "../utils.ts";
 
-export class EngineImpl implements Engine {
+class EngineImpl implements Engine {
   private children: Widget[] = [];
   private context = new EngineContextImpl(getAnsiNativeContext());
   private consoleSize = new Size();
@@ -23,7 +23,9 @@ export class EngineImpl implements Engine {
     requestUpdateConsoleSize();
     let consoleSize = getConsoleSizeFromInput();
     while (consoleSize === null) {
-      await delay(1);
+      await new Promise<void>((resolve) => {
+        setTimeout(resolve, 1);
+      });
       consoleSize = getConsoleSizeFromInput();
     }
     this.consoleSize.set(consoleSize.width, consoleSize.height);

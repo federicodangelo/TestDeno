@@ -6,7 +6,7 @@ import {
   Rect,
   DrawContext,
   EngineContext,
-} from "./types.ts";
+} from "../types.ts";
 
 export abstract class BaseWidget implements Widget {
   private _x: number = 0;

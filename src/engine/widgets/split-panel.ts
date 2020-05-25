@@ -1,5 +1,5 @@
-import { BaseWidgetContainer } from "../widget-container.ts";
-import { BoxContainerWidget } from "./BoxContainerWidget.ts";
+import { BaseWidgetContainer } from "./widget-container.ts";
+import { BoxContainerWidget } from "./box.ts";
 
 export class SplitPanelContainerWidget extends BaseWidgetContainer {
   public leftPanel: BoxContainerWidget = new BoxContainerWidget(1);

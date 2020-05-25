@@ -1,6 +1,6 @@
-import { CharacterWidget } from "./engine/widgets/CharacterWidget.ts";
+import { CharacterWidget } from "./engine/widgets/character.ts";
 import { Color, Engine } from "./engine/types.ts";
-import { SplitPanelContainerWidget } from "./engine/widgets/SplitPanelContainerWidget.ts";
+import { SplitPanelContainerWidget } from "./engine/widgets/split-panel.ts";
 
 const p1 = new CharacterWidget(
   "@",
@@ -18,18 +18,22 @@ const p2 = new CharacterWidget(
 p2.x = 13;
 p2.y = 3;
 
-const npcs: CharacterWidget[] = [
-  new CharacterWidget(
-    "@",
-    Color.Yellow,
-    Color.Black,
-  ),
-  new CharacterWidget(
-    "@",
-    Color.Green,
-    Color.Black,
-  ),
+const npcs: CharacterWidget[] = [];
+const npcsColors: Color[] = [
+  Color.Green,
+  Color.Yellow,
+  Color.Cyan,
 ];
+
+for (let i = 0; i < 2; i++) {
+  npcs.push(
+    new CharacterWidget(
+      "@",
+      npcsColors[i % npcsColors.length],
+      Color.Black,
+    ),
+  );
+}
 
 const characters = [
   ...npcs,
@@ -94,7 +98,7 @@ export function updateGame(engine: Engine): boolean {
 
   if (input) {
     input.split("").forEach((c) => {
-      switch (c) {
+      switch (c.toLowerCase()) {
         case "a":
           p1.x--;
           break;

@@ -3,7 +3,7 @@ import {
   WidgetContainer,
   ChildrenLayout,
   Engine,
-} from "./types.ts";
+} from "../types.ts";
 import { BaseWidget } from "./widget.ts";
 
 export abstract class BaseWidgetContainer extends BaseWidget

@@ -5,10 +5,10 @@ import {
   requestUpdateConsoleSize,
   getConsoleSizeFromInput,
   getAnsiNativeContext,
-} from "./engine/ansi.ts";
-import { readInput, updateInput } from "./engine/input.ts";
+} from "./engine/native/ansi.ts";
+import { readInput, updateInput } from "./engine/native/input.ts";
 import { delay } from "./utils.ts";
-import { Color, BlockElements, Size } from "./engine/types.ts";
+import { Color, SpecialChar, Size } from "./engine/types.ts";
 import { EngineContextImpl } from "./engine/context.ts";
 
 initAnsi();
@@ -63,7 +63,7 @@ function drawScreen(c: number) {
       context.color(
         fillColors[(y + x + frameNumber) % fillColors.length],
         Color.Black,
-      ).char(
+      ).specialChar(
         c,
       );
     }
@@ -74,7 +74,7 @@ const totalFrames = 100;
 const startTime = performance.now();
 let cancel = false;
 
-let fillChar = BlockElements.FullBlock;
+let fillChar = SpecialChar.FullBlock;
 
 for (let i = 0; i < totalFrames && !cancel; i++) {
   context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
@@ -88,11 +88,7 @@ for (let i = 0; i < totalFrames && !cancel; i++) {
   const newConsoleSize = getConsoleSizeFromInput();
   if (newConsoleSize !== null) consoleSize.copyFrom(newConsoleSize);
   const input = readInput();
-  if (input && input.indexOf("z") >= 0) cancel = true;
-  if (input && input.charCodeAt(0) >= 32) {
-    //Only visible chars
-    fillChar = input.charCodeAt(0);
-  }
+  if (input && input.toLowerCase().indexOf("z") >= 0) cancel = true;
   await delay(1);
   frameNumber++;
 }

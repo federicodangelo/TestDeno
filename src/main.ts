@@ -1,7 +1,7 @@
 import { delay } from "./utils.ts";
 import { Color } from "./engine/types.ts";
 import { buildEngine, destroyEngine } from "./engine/engine.ts";
-import { LabelWidget } from "./engine/widgets/LabelWidget.ts";
+import { LabelWidget } from "./engine/widgets/label.ts";
 import { initGame, updateGame, mainUI } from "./game.ts";
 
 const engine = await buildEngine();
@@ -24,6 +24,9 @@ const statsLabel = new LabelWidget(
 
 fpsLabel.parent = mainUI.rightPanel;
 statsLabel.parent = mainUI.rightPanel;
+
+new LabelWidget("Move with W/S/A/D\nQuit with Z", Color.White, Color.Blue)
+  .parent = mainUI.rightPanel;
 
 let totalRenderTime = 0;
 let frames = 0;
