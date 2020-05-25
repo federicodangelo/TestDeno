@@ -1,5 +1,5 @@
 import { BaseWidget } from "../widget.ts";
-import { AnsiContext, AnsiColor } from "../types.ts";
+import { AnsiColor, DrawContext } from "../types.ts";
 
 export class CharacterWidget extends BaseWidget {
   public char: string;
@@ -14,7 +14,7 @@ export class CharacterWidget extends BaseWidget {
     this.backColor = backColor;
   }
 
-  protected drawSelf(context: AnsiContext) {
+  protected drawSelf(context: DrawContext) {
     context.color(this.foreColor, this.backColor).text(this.char);
   }
 }

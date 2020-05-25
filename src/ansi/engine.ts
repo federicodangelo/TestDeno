@@ -6,13 +6,13 @@ import {
   getMouse as getMouseFromInput,
 } from "./ansi.ts";
 import { Engine, Widget, Size, Point, Rect } from "./types.ts";
-import { AnsiContextImpl } from "./context.ts";
+import { AnsiContextImpl as EngineContextImpl } from "./context.ts";
 import { updateInput, readInput } from "./input.ts";
 import { delay } from "../utils.ts";
 
 export class EngineImpl implements Engine {
   private children: Widget[] = [];
-  private context = new AnsiContextImpl();
+  private context = new EngineContextImpl();
   private consoleSize = new Size();
   private mousePosition = new Point();
   private invalidRects: Rect[] = [];
@@ -127,7 +127,7 @@ export class EngineImpl implements Engine {
       : null;
 
     if (lastRect !== null && lastRect.intersects(rect)) {
-      lastRect.expand(rect);
+      lastRect.union(rect);
       return;
     }
 

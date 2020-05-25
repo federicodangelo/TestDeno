@@ -3,14 +3,14 @@ import {
   AnsiColorCodesFront,
   AnsiColorCodesBack,
   DoubleLineElements,
-  AnsiContext,
   ESC,
   Rect,
   Point,
   useCp437,
+  EngineContext,
 } from "./types.ts";
 
-export class AnsiContextImpl implements AnsiContext {
+export class AnsiContextImpl implements EngineContext {
   private buffer: number[] = [];
   private offset = 0;
 
@@ -131,20 +131,31 @@ export class AnsiContextImpl implements AnsiContext {
 
   public text(str: string) {
     for (let i = 0; i < str.length; i++) {
-      const code = str.charCodeAt(i);
-      this.textInternal(
-        code,
-        this.foreColor,
-        this.backColor,
-        this.tx + this.x,
-        this.ty + this.y,
-      );
-      this.x++;
+      this.char(str.charCodeAt(i));
     }
     return this;
   }
 
-  private textInternal(
+  public char(code: number) {
+    this.setChar(
+      code,
+      this.foreColor,
+      this.backColor,
+      this.tx + this.x,
+      this.ty + this.y,
+    );
+    this.x++;
+    return this;
+  }
+
+  public charTimes(code: number, times: number) {
+    for (let t = 0; t < times; t++) {
+      this.char(code);
+    }
+    return this;
+  }
+
+  private setChar(
     char: number,
     foreColor: AnsiColor,
     backColor: AnsiColor,
@@ -207,28 +218,42 @@ export class AnsiContextImpl implements AnsiContext {
     }
   }
 
-  public textTimes(str: string, times: number) {
-    for (let t = 0; t < times; t++) {
-      this.text(str);
-    }
-    return this;
-  }
-
   public border(x: number, y: number, width: number, height: number) {
+    const clip = this.clip;
+    const tx = this.tx;
+    const ty = this.ty;
+
+    const x0 = Math.max(x, clip.x - tx);
+    const y0 = Math.max(y, clip.y - ty);
+    const x1 = Math.min(x + width, clip.x1 - tx);
+    const y1 = Math.min(y + height, clip.y1 - ty);
+
+    if (x1 <= x0 || y1 <= y0) {
+      return this;
+    }
+
+    if (
+      x0 !== x && x0 !== x + width &&
+      y0 !== y && y0 !== y + height
+    ) {
+      return this;
+    }
+
     this.moveCursorTo(x, y);
-    this.text(DoubleLineElements.CornerTopLeft);
-    this.textTimes(DoubleLineElements.Horizontal, width - 2);
-    this.text(DoubleLineElements.CornerTopRight);
+    this.char(DoubleLineElements.CornerTopLeft);
+    this.charTimes(DoubleLineElements.Horizontal, width - 2);
+    this.char(DoubleLineElements.CornerTopRight);
     for (let i = 0; i < height - 2; i++) {
       this.moveCursorTo(x, y + 1 + i);
-      this.text(DoubleLineElements.Vertical);
+      this.char(DoubleLineElements.Vertical);
       this.moveCursorTo(x + width - 1, y + 1 + i);
-      this.text(DoubleLineElements.Vertical);
+      this.char(DoubleLineElements.Vertical);
     }
     this.moveCursorTo(x, y + height - 1);
-    this.text(DoubleLineElements.CornerBottomLeft);
-    this.textTimes(DoubleLineElements.Horizontal, width - 2);
-    this.text(DoubleLineElements.CornerBottomRight);
+    this.char(DoubleLineElements.CornerBottomLeft);
+    this.charTimes(DoubleLineElements.Horizontal, width - 2);
+    this.char(DoubleLineElements.CornerBottomRight);
+
     return this;
   }
 
@@ -239,9 +264,25 @@ export class AnsiContextImpl implements AnsiContext {
     height: number,
     char: string,
   ) {
-    for (let i = y; i < y + height; i++) {
-      this.moveCursorTo(x, i);
-      this.textTimes(char, width);
+    const clip = this.clip;
+    const tx = this.tx;
+    const ty = this.ty;
+
+    const x0 = Math.max(tx + x, clip.x);
+    const y0 = Math.max(ty + y, clip.y);
+    const x1 = Math.min(tx + x + width, clip.x1);
+    const y1 = Math.min(ty + y + height, clip.y1);
+
+    if (x1 <= x0 || y1 <= y0) {
+      return this;
+    }
+
+    const code = char.charCodeAt(0);
+
+    for (let i = y0; i < y1; i++) {
+      for (let j = x0; j < x1; j++) {
+        this.setChar(code, this.foreColor, this.backColor, j, i);
+      }
     }
     return this;
   }

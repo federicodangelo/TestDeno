@@ -1,4 +1,4 @@
-import { AnsiContext, AnsiColor } from "../types.ts";
+import { AnsiColor, DrawContext } from "../types.ts";
 import { BaseWidgetContainer } from "../widget-container.ts";
 
 export class BoxContainerWidget extends BaseWidgetContainer {
@@ -28,7 +28,7 @@ export class BoxContainerWidget extends BaseWidgetContainer {
     this.fillChar = fillChar;
   }
 
-  drawSelf(context: AnsiContext) {
+  drawSelf(context: DrawContext) {
     if (this.border > 0) {
       context.color(this.foreColor, this.backColor).fill(
         1,

@@ -5,6 +5,7 @@ import {
   WidgetLayout,
   Engine,
   Rect,
+  DrawContext,
 } from "./types.ts";
 
 export abstract class BaseWidget implements Widget {
@@ -149,7 +150,7 @@ export abstract class BaseWidget implements Widget {
     context.popTransform();
   }
 
-  protected abstract drawSelf(context: AnsiContext): void;
+  protected abstract drawSelf(context: DrawContext): void;
 
   public getBoundingBox() {
     if (this._boundingBoxDirty) {

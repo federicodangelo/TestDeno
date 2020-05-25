@@ -4,60 +4,60 @@ export const useCp437 = Deno.build.os === "windows";
 
 export class BlockElements {
   //Block
-  public static FullBlock = useCp437 ? String.fromCharCode(219) : "█";
-  public static BottomHalfBlock = useCp437 ? String.fromCharCode(220) : "▄";
-  public static TopHalfBlock = useCp437 ? String.fromCharCode(224) : "▀";
-  public static LeftHalfBlock = useCp437 ? String.fromCharCode(221) : "▌";
-  public static RightHalfBlock = useCp437 ? String.fromCharCode(222) : "▌";
+  public static FullBlock = useCp437 ? 219 : "█".charCodeAt(0);
+  public static BottomHalfBlock = useCp437 ? 220 : "▄".charCodeAt(0);
+  public static TopHalfBlock = useCp437 ? 224 : "▀".charCodeAt(0);
+  public static LeftHalfBlock = useCp437 ? 221 : "▌".charCodeAt(0);
+  public static RightHalfBlock = useCp437 ? 222 : "▌".charCodeAt(0);
 
   //Shade
-  public static LightShade = useCp437 ? String.fromCharCode(176) : "░";
-  public static MediumShade = useCp437 ? String.fromCharCode(177) : "▒";
-  public static DarkShade = useCp437 ? String.fromCharCode(178) : "▓";
+  public static LightShade = useCp437 ? 176 : "░".charCodeAt(0);
+  public static MediumShade = useCp437 ? 177 : "▒".charCodeAt(0);
+  public static DarkShade = useCp437 ? 178 : "▓".charCodeAt(0);
 }
 
 export type LineElements = {
-  Vertical: string;
-  Horizontal: string;
-  CornerTopLeft: string;
-  CornerTopRight: string;
-  CornerBottomLeft: string;
-  CornerBottomRight: string;
-  ConnectorVerticalLeft: string;
-  ConnectorVerticalRight: string;
-  ConnectorHorizontalTop: string;
-  ConnectorHorizontalBottom: string;
-  ConnectorCross: string;
+  Vertical: number;
+  Horizontal: number;
+  CornerTopLeft: number;
+  CornerTopRight: number;
+  CornerBottomLeft: number;
+  CornerBottomRight: number;
+  ConnectorVerticalLeft: number;
+  ConnectorVerticalRight: number;
+  ConnectorHorizontalTop: number;
+  ConnectorHorizontalBottom: number;
+  ConnectorCross: number;
 };
 
 export const SingleLineElements: LineElements = {
   //Single Line
-  Vertical: useCp437 ? String.fromCharCode(179) : "│",
-  Horizontal: useCp437 ? String.fromCharCode(196) : "─",
-  CornerTopLeft: useCp437 ? String.fromCharCode(218) : "┌",
-  CornerTopRight: useCp437 ? String.fromCharCode(191) : "┐",
-  CornerBottomLeft: useCp437 ? String.fromCharCode(192) : "└",
-  CornerBottomRight: useCp437 ? String.fromCharCode(217) : "┘",
-  ConnectorVerticalLeft: useCp437 ? String.fromCharCode(180) : "┤",
-  ConnectorVerticalRight: useCp437 ? String.fromCharCode(195) : "├",
-  ConnectorHorizontalTop: useCp437 ? String.fromCharCode(193) : "┴",
-  ConnectorHorizontalBottom: useCp437 ? String.fromCharCode(194) : "┬",
-  ConnectorCross: useCp437 ? String.fromCharCode(197) : "┼",
+  Vertical: useCp437 ? 179 : "│".charCodeAt(0),
+  Horizontal: useCp437 ? 196 : "─".charCodeAt(0),
+  CornerTopLeft: useCp437 ? 218 : "┌".charCodeAt(0),
+  CornerTopRight: useCp437 ? 191 : "┐".charCodeAt(0),
+  CornerBottomLeft: useCp437 ? 192 : "└".charCodeAt(0),
+  CornerBottomRight: useCp437 ? 217 : "┘".charCodeAt(0),
+  ConnectorVerticalLeft: useCp437 ? 180 : "┤".charCodeAt(0),
+  ConnectorVerticalRight: useCp437 ? 195 : "├".charCodeAt(0),
+  ConnectorHorizontalTop: useCp437 ? 193 : "┴".charCodeAt(0),
+  ConnectorHorizontalBottom: useCp437 ? 194 : "┬".charCodeAt(0),
+  ConnectorCross: useCp437 ? 197 : "┼".charCodeAt(0),
 };
 
 export const DoubleLineElements: LineElements = {
   //Double Line
-  Vertical: useCp437 ? String.fromCharCode(186) : "║",
-  Horizontal: useCp437 ? String.fromCharCode(205) : "═",
-  CornerTopLeft: useCp437 ? String.fromCharCode(201) : "╔",
-  CornerTopRight: useCp437 ? String.fromCharCode(187) : "╗",
-  CornerBottomLeft: useCp437 ? String.fromCharCode(200) : "╚",
-  CornerBottomRight: useCp437 ? String.fromCharCode(188) : "╝",
-  ConnectorVerticalLeft: useCp437 ? String.fromCharCode(185) : "╣",
-  ConnectorVerticalRight: useCp437 ? String.fromCharCode(204) : "╠",
-  ConnectorHorizontalTop: useCp437 ? String.fromCharCode(202) : "╩",
-  ConnectorHorizontalBottom: useCp437 ? String.fromCharCode(203) : "╦",
-  ConnectorCross: useCp437 ? String.fromCharCode(206) : "╬",
+  Vertical: useCp437 ? 186 : "║".charCodeAt(0),
+  Horizontal: useCp437 ? 205 : "═".charCodeAt(0),
+  CornerTopLeft: useCp437 ? 201 : "╔".charCodeAt(0),
+  CornerTopRight: useCp437 ? 187 : "╗".charCodeAt(0),
+  CornerBottomLeft: useCp437 ? 200 : "╚".charCodeAt(0),
+  CornerBottomRight: useCp437 ? 188 : "╝".charCodeAt(0),
+  ConnectorVerticalLeft: useCp437 ? 185 : "╣".charCodeAt(0),
+  ConnectorVerticalRight: useCp437 ? 204 : "╠".charCodeAt(0),
+  ConnectorHorizontalTop: useCp437 ? 202 : "╩".charCodeAt(0),
+  ConnectorHorizontalBottom: useCp437 ? 203 : "╦".charCodeAt(0),
+  ConnectorCross: useCp437 ? 206 : "╬".charCodeAt(0),
 };
 
 export enum AnsiColor {
@@ -117,25 +117,18 @@ export const AnsiColorCodesBack = [
   "107",
 ];
 
-export interface AnsiContext {
-  isVisible(x: number, y: number, width: number, height: number): boolean;
+export interface DrawContext {
+  moveCursorTo(x: number, y: number): EngineContext;
 
-  pushTransform(x: number, y: number): void;
-  popTransform(): void;
+  color(foreColor: AnsiColor, backColor: AnsiColor): EngineContext;
+  resetColor(): EngineContext;
 
-  pushClip(x: number, y: number, width: number, height: number): void;
-  popClip(): void;
+  text(str: string): EngineContext;
 
-  moveCursorTo(x: number, y: number): AnsiContext;
+  char(code: number): EngineContext;
+  charTimes(code: number, times: number): EngineContext;
 
-  color(foreColor: AnsiColor, backColor: AnsiColor): AnsiContext;
-
-  resetColor(): AnsiContext;
-
-  text(str: string): AnsiContext;
-  textTimes(str: string, times: number): AnsiContext;
-
-  border(x: number, y: number, width: number, height: number): AnsiContext;
+  border(x: number, y: number, width: number, height: number): EngineContext;
 
   fill(
     x: number,
@@ -143,7 +136,17 @@ export interface AnsiContext {
     width: number,
     height: number,
     char: string,
-  ): AnsiContext;
+  ): EngineContext;
+}
+
+export interface EngineContext extends DrawContext {
+  isVisible(x: number, y: number, width: number, height: number): boolean;
+
+  pushTransform(x: number, y: number): void;
+  popTransform(): void;
+
+  pushClip(x: number, y: number, width: number, height: number): void;
+  popClip(): void;
 }
 
 export interface WidgetLayout {
@@ -186,7 +189,7 @@ export interface Widget {
   height: number;
   parent: WidgetContainer | null;
   updateLayout(parentWidth: number, parentHeight: number): void;
-  draw(context: AnsiContext): void;
+  draw(context: EngineContext): void;
   layout: WidgetLayout | null;
   setLayout(layout: WidgetLayout | null): Widget;
   getBoundingBox(): Rect;
@@ -311,7 +314,7 @@ export class Rect {
       this.y > rect.y1);
   }
 
-  public expand(rect: Rect) {
+  public union(rect: Rect) {
     const x0 = Math.min(this.x, rect.x);
     const y0 = Math.min(this.y, rect.y);
     const x1 = Math.max(this.x1, rect.x1);

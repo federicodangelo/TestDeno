@@ -1,5 +1,5 @@
 import { BaseWidget } from "../widget.ts";
-import { AnsiContext, AnsiColor } from "../types.ts";
+import { AnsiColor, DrawContext } from "../types.ts";
 
 export class LabelWidget extends BaseWidget {
   public foreColor: AnsiColor;
@@ -33,7 +33,7 @@ export class LabelWidget extends BaseWidget {
     this.backColor = backColor;
   }
 
-  protected drawSelf(context: AnsiContext) {
+  protected drawSelf(context: DrawContext) {
     context.color(this.foreColor, this.backColor);
 
     for (let i = 0; i < this._lines.length; i++) {
