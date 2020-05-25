@@ -64,7 +64,7 @@ while (running) {
 
   totalRenderTime += renderTime;
 
-  await delay(Math.max(10, 1000 / TARGET_FPS - renderTime));
+  await delay(Math.max(10, (1000 / TARGET_FPS) - renderTime));
 }
 
 destroyEngine(engine);

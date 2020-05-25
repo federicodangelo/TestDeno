@@ -2,6 +2,8 @@ import { CharacterWidget } from "./engine/widgets/character.ts";
 import { Color, Engine } from "./engine/types.ts";
 import { SplitPanelContainerWidget } from "./engine/widgets/split-panel.ts";
 
+const NPCS_COUNT = 2;
+
 const p1 = new CharacterWidget(
   "@",
   Color.BrightRed,
@@ -25,7 +27,7 @@ const npcsColors: Color[] = [
   Color.Cyan,
 ];
 
-for (let i = 0; i < 2; i++) {
+for (let i = 0; i < NPCS_COUNT; i++) {
   npcs.push(
     new CharacterWidget(
       "@",
@@ -97,7 +99,7 @@ export function updateGame(engine: Engine): boolean {
   const input = engine.readInput();
 
   if (input) {
-    const uniqueChars = new Set(...input.split("").map((c) => c.toLowerCase()));
+    const uniqueChars = input.split("").map((c) => c.toLowerCase());
     uniqueChars.forEach((c) => {
       switch (c) {
         case "a":

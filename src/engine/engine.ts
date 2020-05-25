@@ -9,7 +9,7 @@ import {
 } from "./native/ansi.ts";
 import { Engine, Widget, Size, Point, Rect } from "./types.ts";
 import { EngineContextImpl } from "./context.ts";
-import { updateInput, readInput } from "./native/input.ts";
+import { readInput } from "./native/input.ts";
 
 class EngineImpl implements Engine {
   private children: Widget[] = [];
@@ -94,7 +94,6 @@ class EngineImpl implements Engine {
   }
 
   private updateInput() {
-    updateInput();
     const newSize = getConsoleSizeFromInput();
     if (newSize !== null && !newSize.equals(this.consoleSize)) {
       this.consoleSize.set(newSize.width, newSize.height);

@@ -1,11 +1,5 @@
-export function initInput() {
-  Deno.setRaw(Deno.stdin.rid, true);
-}
-
-export function shutdownInput() {
-  Deno.setRaw(Deno.stdin.rid, false);
-}
-
+let running = true;
+let availableInput = "";
 const decoder = new TextDecoder();
 
 async function readStdinRaw(maxLen = 512): Promise<string> {
@@ -19,19 +13,26 @@ async function readStdinRaw(maxLen = 512): Promise<string> {
   return "";
 }
 
-let availableInput = "";
+export function initInput() {
+  Deno.setRaw(Deno.stdin.rid, true);
+  running = true;
 
-export function updateInput() {
-  const readFn = () =>
+  const update = () =>
     readStdinRaw().then((str) => {
+      if (!running) return;
       availableInput += str;
+      update();
     });
 
-  readFn();
+  update();
+}
+
+export function shutdownInput() {
+  running = false;
+  Deno.setRaw(Deno.stdin.rid, false);
 }
 
 export function hasInput() {
-  updateInput();
   return availableInput.length > 0;
 }
 
@@ -42,8 +43,6 @@ export function readInput() {
 }
 
 export function readInputBetween(from: string, to: string) {
-  updateInput();
-
   const first = availableInput.indexOf(from);
   const last = availableInput.indexOf(to, first + from.length);
 

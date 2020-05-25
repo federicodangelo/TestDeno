@@ -7,7 +7,7 @@ import {
 } from "./../types.ts";
 import { NativeContext } from "./types.ts";
 
-const ESC = "\u001b[";
+const CSI = "\u001b[";
 
 const useCp437 = Deno.build.os === "windows";
 
@@ -98,50 +98,50 @@ export function initAnsi() {
 }
 
 export function shutdownAnsi() {
-  drawAscii(`${ESC}0m`); //reset color
+  drawAscii(`${CSI}0m`); //reset color
   disableMouseReporting();
   showCursor();
   shutdownInput();
 }
 
 function enableMouseReporting() {
-  drawAscii(`${ESC}?9h`);
+  drawAscii(`${CSI}?9h`);
 }
 
 function disableMouseReporting() {
-  drawAscii(`${ESC}?9l`);
+  drawAscii(`${CSI}?9l`);
 }
 
 function hideCursor() {
-  drawAscii(`${ESC}?25l`);
+  drawAscii(`${CSI}?25l`);
 }
 
 function showCursor() {
-  drawAscii(`${ESC}?25h`);
+  drawAscii(`${CSI}?25h`);
 }
 
 export function clearScreen() {
-  drawAscii(`${ESC}2J${ESC}0;0H`); //Clear and move top-left
+  drawAscii(`${CSI}2J${CSI}0;0H`); //Clear and move top-left
 }
 
 export function requestUpdateConsoleSize() {
-  const str = `${ESC}?25l` + //hide cursor
-    `${ESC}s` + //save cursor position
-    `${ESC}999;999H` + //Move to huge bottom / right position
-    `${ESC}6n` + //request cursor position
-    `${ESC}u`; //restore cursor position
+  const str = `${CSI}?25l` + //hide cursor
+    `${CSI}s` + //save cursor position
+    `${CSI}999;999H` + //Move to huge bottom / right position
+    `${CSI}6n` + //request cursor position
+    `${CSI}u`; //restore cursor position
 
   drawAscii(str);
 }
 
 export function getConsoleSizeFromInput(): Size | null {
-  let line = readInputBetween(ESC, "R");
+  let line = readInputBetween(CSI, "R");
 
   while (line.length === 0) return null;
 
   //Cursor position response format is "ESC[_posy_;_pos_x_R"
   const { [0]: height, [1]: width } = line
-    .substring(ESC.length, line.length - 1) //Strip starting "ESC["" and ending "R"
+    .substring(CSI.length, line.length - 1) //Strip starting "ESC["" and ending "R"
     .split(";")
     .map((x) => parseInt(x));
 
@@ -208,7 +208,7 @@ export function getAnsiNativeContext(): NativeContext {
     screenY: number,
   ) {
     if (lastDrawX !== screenX || lastDrawY !== screenY) {
-      addToBuffer(ESC);
+      addToBuffer(CSI);
       addToBuffer((screenY + 1).toString());
       addToBuffer(";");
       addToBuffer((screenX + 1).toString());
@@ -221,7 +221,7 @@ export function getAnsiNativeContext(): NativeContext {
       lastDrawForeColor !== foreColor ||
       lastDrawBackColor !== backColor
     ) {
-      addToBuffer(ESC);
+      addToBuffer(CSI);
       addToBuffer(AnsiColorCodesFront[foreColor]);
       addToBuffer(";");
       addToBuffer(AnsiColorCodesBack[backColor]);
