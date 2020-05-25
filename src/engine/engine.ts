@@ -10,7 +10,6 @@ import {
 import { Engine, Widget, Size, Point, Rect } from "./types.ts";
 import { EngineContextImpl } from "./context.ts";
 import { updateInput, readInput } from "./native/input.ts";
-import { delay } from "../utils.ts";
 
 class EngineImpl implements Engine {
   private children: Widget[] = [];
