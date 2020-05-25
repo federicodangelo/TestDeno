@@ -48,7 +48,7 @@ export function readInputBetween(from: string, to: string) {
   const last = availableInput.indexOf(to, first + from.length);
 
   if (first >= 0 && last >= 0) {
-    const toReturn = availableInput.substring(first, last);
+    const toReturn = availableInput.substring(first, last + 1);
 
     const before = availableInput.substring(0, first);
     const after = availableInput.substring(last + to.length);

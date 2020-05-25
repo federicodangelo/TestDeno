@@ -10,23 +10,21 @@ let running = true;
 
 initGame(engine);
 
+const TARGET_FPS = 10;
+
 const fpsLabel = new LabelWidget(
   "FPS: 0.00\nRender Time: 0.00ms",
   Color.White,
   Color.Blue,
 );
 
-const statsLabel = new LabelWidget(
-  "Players: 2\nNpcs: 2",
+fpsLabel.parent = mainUI.rightPanel;
+
+new LabelWidget(
+  "Move P1: W/S/A/D\nMove P2: I/J/K/L\nQuit: Z",
   Color.White,
   Color.Blue,
-);
-
-fpsLabel.parent = mainUI.rightPanel;
-statsLabel.parent = mainUI.rightPanel;
-
-new LabelWidget("Move with W/S/A/D\nQuit with Z", Color.White, Color.Blue)
-  .parent = mainUI.rightPanel;
+).parent = mainUI.rightPanel;
 
 let totalRenderTime = 0;
 let frames = 0;
@@ -48,9 +46,9 @@ function updateFps() {
 function update() {
   updateFps();
 
-  if (!updateGame(engine)) running = false;
-
   engine.update();
+
+  if (!updateGame(engine)) running = false;
 }
 
 while (running) {
@@ -66,7 +64,7 @@ while (running) {
 
   totalRenderTime += renderTime;
 
-  await delay(Math.max(10, 50 - renderTime));
+  await delay(Math.max(10, 1000 / TARGET_FPS - renderTime));
 }
 
 destroyEngine(engine);

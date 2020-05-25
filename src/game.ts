@@ -97,8 +97,9 @@ export function updateGame(engine: Engine): boolean {
   const input = engine.readInput();
 
   if (input) {
-    input.split("").forEach((c) => {
-      switch (c.toLowerCase()) {
+    const uniqueChars = new Set(...input.split("").map((c) => c.toLowerCase()));
+    uniqueChars.forEach((c) => {
+      switch (c) {
         case "a":
           p1.x--;
           break;

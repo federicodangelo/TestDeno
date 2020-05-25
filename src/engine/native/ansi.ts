@@ -121,15 +121,17 @@ function showCursor() {
 }
 
 export function clearScreen() {
-  drawAscii(`${ESC}2J`);
+  drawAscii(`${ESC}2J${ESC}0;0H`); //Clear and move top-left
 }
 
 export function requestUpdateConsoleSize() {
-  drawAscii(`${ESC}?25l`); //hide cursor
-  drawAscii(`${ESC}s`); //save cursor position
-  drawAscii(`${ESC}999;999H`); //Move to huge bottom / right position
-  drawAscii(`${ESC}6n`); //request cursor position
-  drawAscii(`${ESC}u`); //restore cursor position
+  const str = `${ESC}?25l` + //hide cursor
+    `${ESC}s` + //save cursor position
+    `${ESC}999;999H` + //Move to huge bottom / right position
+    `${ESC}6n` + //request cursor position
+    `${ESC}u`; //restore cursor position
+
+  drawAscii(str);
 }
 
 export function getConsoleSizeFromInput(): Size | null {
@@ -139,8 +141,7 @@ export function getConsoleSizeFromInput(): Size | null {
 
   //Cursor position response format is "ESC[_posy_;_pos_x_R"
   const { [0]: height, [1]: width } = line
-    .substr(2)
-    .replace("R", "")
+    .substring(ESC.length, line.length - 1) //Strip starting "ESC["" and ending "R"
     .split(";")
     .map((x) => parseInt(x));
 

@@ -147,5 +147,6 @@ export async function buildEngine() {
 }
 
 export function destroyEngine(engine: Engine) {
+  clearScreen();
   shutdownAnsi();
 }
