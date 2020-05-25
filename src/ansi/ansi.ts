@@ -1,34 +1,37 @@
 import { initInput, shutdownInput, readInputBetween } from "./input.ts";
 import { delay } from "../utils.ts";
-import { ESC } from "./types.ts";
+import { ESC, Size, Point } from "./types.ts";
 
 const useUTF8 = Deno.build.os !== "windows";
 
 const encoder = new TextEncoder();
 
-export const consoleSize = { width: 0, height: 0 };
-
-export async function initAnsi() {
+export function initAnsi() {
   initInput();
-  requestUpdateConsoleSize();
-  while (!updateConsoleSizeFromInput()) {
-    await delay(10);
-  }
-
   hideCursor();
+  enableMouseReporting();
 }
 
 export function shutdownAnsi() {
   drawAscii(`${ESC}0m`); //reset color
+  disableMouseReporting();
   showCursor();
   shutdownInput();
 }
 
-export function hideCursor() {
+function enableMouseReporting() {
+  drawAscii(`${ESC}?9h`);
+}
+
+function disableMouseReporting() {
+  drawAscii(`${ESC}?9l`);
+}
+
+function hideCursor() {
   drawAscii(`${ESC}?25l`);
 }
 
-export function showCursor() {
+function showCursor() {
   drawAscii(`${ESC}?25h`);
 }
 
@@ -44,10 +47,10 @@ export function requestUpdateConsoleSize() {
   drawAscii(`${ESC}u`); //restore cursor position
 }
 
-export function updateConsoleSizeFromInput() {
+export function getConsoleSizeFromInput(): Size | null {
   let line = readInputBetween(ESC, "R");
 
-  while (line.length === 0) return false;
+  while (line.length === 0) return null;
 
   //Cursor position response format is "ESC[_posy_;_pos_x_R"
   const { [0]: height, [1]: width } = line
@@ -56,9 +59,12 @@ export function updateConsoleSizeFromInput() {
     .split(";")
     .map((x) => parseInt(x));
 
-  consoleSize.width = width;
-  consoleSize.height = height;
-  return true;
+  return new Size(width, height);
+}
+
+export function getMouse(): Point | null {
+  //TODO
+  return null;
 }
 
 function drawAscii(str: string) {
