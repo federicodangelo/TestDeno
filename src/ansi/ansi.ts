@@ -1,8 +1,5 @@
 import { initInput, shutdownInput, readInputBetween } from "./input.ts";
-import { delay } from "../utils.ts";
-import { ESC, Size, Point } from "./types.ts";
-
-const useUTF8 = Deno.build.os !== "windows";
+import { ESC, Size, Point, useCp437 } from "./types.ts";
 
 const encoder = new TextEncoder();
 
@@ -68,7 +65,7 @@ export function getMouse(): Point | null {
 }
 
 function drawAscii(str: string) {
-  if (useUTF8) {
+  if (useCp437) {
     Deno.stdout.writeSync(encoder.encode(str));
   } else {
     Deno.stdout.writeSync(encodeAscii(str));

@@ -13,16 +13,12 @@ let running = true;
 
 initGame(engine);
 
-const fpsLabel = new LabelWidget(
-  "FPS: 0.00",
-  AnsiColor.White,
-  AnsiColor.Blue,
-);
+const fpsLabel = new LabelWidget("FPS: 0.00", AnsiColor.White, AnsiColor.Blue);
 
 const statsLabel = new LabelWidget(
   "Players: 2\nNpcs: 2",
   AnsiColor.White,
-  AnsiColor.Blue,
+  AnsiColor.Blue
 );
 
 fpsLabel.parent = mainUI.rightPanel;

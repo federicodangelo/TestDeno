@@ -1,17 +1,19 @@
 export const ESC = "\u001b[";
 
+export const useCp437 = Deno.build.os === "windows";
+
 export class BlockElements {
   //Block
-  public static FullBlock = String.fromCharCode(219); //█
-  public static BottomHalfBlock = String.fromCharCode(220); //▄
-  public static TopHalfBlock = String.fromCharCode(224); //▀
-  public static LeftHalfBlock = String.fromCharCode(221); //▌
-  public static RightHalfBlock = String.fromCharCode(222); //▌
+  public static FullBlock = useCp437 ? String.fromCharCode(219) : "█";
+  public static BottomHalfBlock = useCp437 ? String.fromCharCode(220) : "▄";
+  public static TopHalfBlock = useCp437 ? String.fromCharCode(224) : "▀";
+  public static LeftHalfBlock = useCp437 ? String.fromCharCode(221) : "▌";
+  public static RightHalfBlock = useCp437 ? String.fromCharCode(222) : "▌";
 
   //Shade
-  public static LightShade = String.fromCharCode(176); //░
-  public static MediumShade = String.fromCharCode(177); //▒
-  public static DarkShade = String.fromCharCode(178); //▓
+  public static LightShade = useCp437 ? String.fromCharCode(176) : "░";
+  public static MediumShade = useCp437 ? String.fromCharCode(177) : "▒";
+  public static DarkShade = useCp437 ? String.fromCharCode(178) : "▓";
 }
 
 export type LineElements = {
@@ -30,32 +32,32 @@ export type LineElements = {
 
 export const SingleLineElements: LineElements = {
   //Single Line
-  Vertical: String.fromCharCode(179), //│
-  Horizontal: String.fromCharCode(196), //─
-  CornerTopLeft: String.fromCharCode(218), //┌
-  CornerTopRight: String.fromCharCode(191), //┐
-  CornerBottomLeft: String.fromCharCode(192), //└
-  CornerBottomRight: String.fromCharCode(217), //┘
-  ConnectorVerticalLeft: String.fromCharCode(180), //┤
-  ConnectorVerticalRight: String.fromCharCode(195), //├
-  ConnectorHorizontalTop: String.fromCharCode(193), //┴
-  ConnectorHorizontalBottom: String.fromCharCode(194), //┬
-  ConnectorCross: String.fromCharCode(197), //┼
+  Vertical: useCp437 ? String.fromCharCode(179) : "│",
+  Horizontal: useCp437 ? String.fromCharCode(196) : "─",
+  CornerTopLeft: useCp437 ? String.fromCharCode(218) : "┌",
+  CornerTopRight: useCp437 ? String.fromCharCode(191) : "┐",
+  CornerBottomLeft: useCp437 ? String.fromCharCode(192) : "└",
+  CornerBottomRight: useCp437 ? String.fromCharCode(217) : "┘",
+  ConnectorVerticalLeft: useCp437 ? String.fromCharCode(180) : "┤",
+  ConnectorVerticalRight: useCp437 ? String.fromCharCode(195) : "├",
+  ConnectorHorizontalTop: useCp437 ? String.fromCharCode(193) : "┴",
+  ConnectorHorizontalBottom: useCp437 ? String.fromCharCode(194) : "┬",
+  ConnectorCross: useCp437 ? String.fromCharCode(197) : "┼",
 };
 
 export const DoubleLineElements: LineElements = {
   //Double Line
-  Vertical: String.fromCharCode(186), //║
-  Horizontal: String.fromCharCode(205), //═
-  CornerTopLeft: String.fromCharCode(201), //╔
-  CornerTopRight: String.fromCharCode(187), //╗
-  CornerBottomLeft: String.fromCharCode(200), //╚
-  CornerBottomRight: String.fromCharCode(188), //╝
-  ConnectorVerticalLeft: String.fromCharCode(185), //╣
-  ConnectorVerticalRight: String.fromCharCode(204), //╠
-  ConnectorHorizontalTop: String.fromCharCode(202), //╩
-  ConnectorHorizontalBottom: String.fromCharCode(203), //╦
-  ConnectorCross: String.fromCharCode(206), //╬
+  Vertical: useCp437 ? String.fromCharCode(186) : "║",
+  Horizontal: useCp437 ? String.fromCharCode(205) : "═",
+  CornerTopLeft: useCp437 ? String.fromCharCode(201) : "╔",
+  CornerTopRight: useCp437 ? String.fromCharCode(187) : "╗",
+  CornerBottomLeft: useCp437 ? String.fromCharCode(200) : "╚",
+  CornerBottomRight: useCp437 ? String.fromCharCode(188) : "╝",
+  ConnectorVerticalLeft: useCp437 ? String.fromCharCode(185) : "╣",
+  ConnectorVerticalRight: useCp437 ? String.fromCharCode(204) : "╠",
+  ConnectorHorizontalTop: useCp437 ? String.fromCharCode(202) : "╩",
+  ConnectorHorizontalBottom: useCp437 ? String.fromCharCode(203) : "╦",
+  ConnectorCross: useCp437 ? String.fromCharCode(206) : "╬",
 };
 
 export enum AnsiColor {
@@ -124,10 +126,7 @@ export interface AnsiContext {
 
   moveCursorTo(x: number, y: number): AnsiContext;
 
-  color(
-    foreColor: AnsiColor,
-    backColor: AnsiColor,
-  ): AnsiContext;
+  color(foreColor: AnsiColor, backColor: AnsiColor): AnsiContext;
 
   resetColor(): AnsiContext;
 
@@ -141,7 +140,7 @@ export interface AnsiContext {
     y: number,
     width: number,
     height: number,
-    char: string,
+    char: string
   ): AnsiContext;
 }
 
@@ -153,12 +152,12 @@ export interface WidgetLayout {
   customSizeFn?: (
     widget: Widget,
     parentWidth: number,
-    parentHeight: number,
+    parentHeight: number
   ) => void;
   customPositionFn?: (
     widget: Widget,
     parentWidth: number,
-    parentHeight: number,
+    parentHeight: number
   ) => void;
 }
 
@@ -193,10 +192,7 @@ export class Point {
   public x: number;
   public y: number;
 
-  public constructor(
-    x: number = 0,
-    y: number = 0,
-  ) {
+  public constructor(x: number = 0, y: number = 0) {
     this.x = x;
     this.y = y;
   }
@@ -211,10 +207,7 @@ export class Size {
   public width: number;
   public height: number;
 
-  public constructor(
-    width: number = 0,
-    height: number = 0,
-  ) {
+  public constructor(width: number = 0, height: number = 0) {
     this.width = width;
     this.height = height;
   }
@@ -235,7 +228,7 @@ export class Rect {
     x: number = 0,
     y: number = 0,
     width: number = 0,
-    height: number = 0,
+    height: number = 0
   ) {
     this.x = x;
     this.y = y;

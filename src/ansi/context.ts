@@ -7,10 +7,11 @@ import {
   ESC,
   Rect,
   Point,
+  useCp437,
 } from "./types.ts";
 
 export class AnsiContextImpl implements AnsiContext {
-  private buffer: Uint16Array;
+  private buffer: number[] = [];
   private offset = 0;
 
   private bounds = new Rect();
@@ -32,7 +33,7 @@ export class AnsiContextImpl implements AnsiContext {
   private clipStack: Rect[] = [];
 
   public constructor(capacity = 8192) {
-    this.buffer = new Uint16Array(capacity);
+    this.buffer.fill(0, 0, capacity);
   }
 
   public beginDraw(x: number, y: number, width: number, height: number) {
@@ -52,11 +53,17 @@ export class AnsiContextImpl implements AnsiContext {
     this.offset = 0;
   }
 
+  private encoder = new TextEncoder();
+
   public endDraw() {
-    const codes16 = this.buffer.subarray(0, this.offset);
-    const codes8 = new Uint8Array(codes16.length);
-    codes8.set(codes16);
-    Deno.stdout.writeSync(codes8);
+    if (useCp437) {
+      const codes8 = new Uint8Array(this.offset);
+      codes8.set(this.buffer);
+      Deno.stdout.writeSync(codes8);
+    } else {
+      const str = String.fromCharCode(...this.buffer.slice(0, this.offset));
+      Deno.stdout.writeSync(this.encoder.encode(str));
+    }
     this.offset = 0;
   }
 
@@ -82,12 +89,7 @@ export class AnsiContextImpl implements AnsiContext {
     const maxX = Math.min(this.tx + x + width, this.clip.x + this.clip.width);
     const maxY = Math.min(this.ty + y + height, this.clip.y + this.clip.height);
 
-    this.clip.set(
-      minX,
-      minY,
-      maxX - minX,
-      maxY - minY,
-    );
+    this.clip.set(minX, minY, maxX - minX, maxY - minY);
   }
 
   popClip(): void {
@@ -121,7 +123,7 @@ export class AnsiContextImpl implements AnsiContext {
         this.foreColor,
         this.backColor,
         this.tx + this.x,
-        this.ty + this.y,
+        this.ty + this.y
       );
       this.x++;
     }
@@ -133,13 +135,15 @@ export class AnsiContextImpl implements AnsiContext {
     foreColor: AnsiColor,
     backColor: AnsiColor,
     screenX: number,
-    screenY: number,
+    screenY: number
   ) {
     const clip = this.clip;
 
     if (
-      screenX >= clip.x && screenX < clip.x + clip.width &&
-      screenY >= clip.y && screenY < clip.y + clip.height
+      screenX >= clip.x &&
+      screenX < clip.x + clip.width &&
+      screenY >= clip.y &&
+      screenY < clip.y + clip.height
     ) {
       if (this.lastDrawX !== screenX || this.lastDrawY !== screenY) {
         this.addToBuffer(ESC);
@@ -170,25 +174,23 @@ export class AnsiContextImpl implements AnsiContext {
   }
 
   private addToBuffer(str: string) {
-    while (str.length + this.offset > this.buffer.length) {
-      const newBuffer = new Uint16Array(this.buffer.length * 2);
-      newBuffer.set(this.buffer, 0);
-      this.buffer = newBuffer;
-    }
-
     for (let i = 0; i < str.length; i++) {
-      this.buffer[this.offset++] = str.charCodeAt(i);
+      if (this.offset < this.buffer.length) {
+        this.buffer[this.offset++] = str.charCodeAt(i);
+      } else {
+        this.buffer.push(str.charCodeAt(i));
+        this.offset++;
+      }
     }
   }
 
   private addToBufferChar(char: number) {
-    while (1 + this.offset > this.buffer.length) {
-      const newBuffer = new Uint16Array(this.buffer.length * 2);
-      newBuffer.set(this.buffer, 0);
-      this.buffer = newBuffer;
+    if (this.offset < this.buffer.length) {
+      this.buffer[this.offset++] = char;
+    } else {
+      this.buffer.push(char);
+      this.offset++;
     }
-
-    this.buffer[this.offset++] = char;
   }
 
   public textTimes(str: string, times: number) {
@@ -221,7 +223,7 @@ export class AnsiContextImpl implements AnsiContext {
     y: number,
     width: number,
     height: number,
-    char: string,
+    char: string
   ) {
     for (let i = y; i < y + height; i++) {
       this.moveCursorTo(x, i);
