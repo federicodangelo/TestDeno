@@ -52,7 +52,7 @@ const fillColors: AnsiColor[] = [
 
 let frameNumber = 0;
 
-function drawScreen(c: string) {
+function drawScreen(c: number) {
   context.border(0, 0, consoleSize.width, consoleSize.height);
 
   for (let y = 1; y < consoleSize.height - 1; y++) {
@@ -62,7 +62,7 @@ function drawScreen(c: string) {
       context.color(
         fillColors[(y + x + frameNumber) % fillColors.length],
         AnsiColor.Black,
-      ).text(
+      ).char(
         c,
       );
     }
@@ -90,7 +90,7 @@ for (let i = 0; i < totalFrames && !cancel; i++) {
   if (input && input.indexOf("z") >= 0) cancel = true;
   if (input && input.charCodeAt(0) >= 32) {
     //Only visible chars
-    fillChar = input[0];
+    fillChar = input.charCodeAt(0);
   }
   await delay(1);
   frameNumber++;

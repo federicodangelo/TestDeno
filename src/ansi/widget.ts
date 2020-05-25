@@ -1,11 +1,11 @@
 import {
   Widget,
-  AnsiContext,
   WidgetContainer,
   WidgetLayout,
   Engine,
   Rect,
   DrawContext,
+  EngineContext,
 } from "./types.ts";
 
 export abstract class BaseWidget implements Widget {
@@ -140,7 +140,7 @@ export abstract class BaseWidget implements Widget {
     }
   }
 
-  public draw(context: AnsiContext): void {
+  public draw(context: EngineContext): void {
     if (!context.isVisible(this.x, this.y, this.width, this.height)) return;
     context.pushTransform(this.x, this.y);
     context.pushClip(0, 0, this.width, this.height);
