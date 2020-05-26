@@ -1,40 +1,33 @@
 import {
-  initAnsi,
-  shutdownAnsi,
-  clearScreen,
-  requestUpdateConsoleSize,
-  getConsoleSizeFromInput,
   getAnsiNativeContext,
 } from "./engine/native/ansi.ts";
-import { readInput, updateInput } from "./engine/native/input.ts";
 import { delay } from "./utils.ts";
 import { Color, SpecialChar, Size } from "./engine/types.ts";
 import { EngineContextImpl } from "./engine/context.ts";
 
-initAnsi();
+const nativeContext = getAnsiNativeContext();
 
-clearScreen();
+const context = new EngineContextImpl(nativeContext);
 
-const context = new EngineContextImpl(getAnsiNativeContext());
+const screenSize = new Size();
 
-const consoleSize = new Size();
+nativeContext.clearScreen();
 
-requestUpdateConsoleSize();
-let tmp = getConsoleSizeFromInput();
+let tmp = nativeContext.getScreenSize();
 while (tmp === null) {
   await delay(10);
-  tmp = getConsoleSizeFromInput();
+  tmp = nativeContext.getScreenSize();
 }
-consoleSize.copyFrom(tmp);
+screenSize.copyFrom(tmp);
 
-context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
+context.beginDraw(0, 0, screenSize.width, screenSize.height);
 
 context.color(Color.Blue, Color.Black).text("Starting test\n");
 
 context.color(Color.Blue, Color.Black).text("Console dimensions:");
 
 context.color(Color.Black, Color.White).text(
-  `${consoleSize.width}x${consoleSize.height}`,
+  `${screenSize.width}x${screenSize.height}`,
 );
 
 context.color(Color.White, Color.Black).text("\n");
@@ -54,12 +47,12 @@ const fillColors: Color[] = [
 let frameNumber = 0;
 
 function drawScreen(c: number) {
-  context.border(0, 0, consoleSize.width, consoleSize.height);
+  context.border(0, 0, screenSize.width, screenSize.height);
 
-  for (let y = 1; y < consoleSize.height - 1; y++) {
+  for (let y = 1; y < screenSize.height - 1; y++) {
     context.moveCursorTo(1, y);
 
-    for (let x = 1; x < consoleSize.width - 1; x++) {
+    for (let x = 1; x < screenSize.width - 1; x++) {
       context.color(
         fillColors[(y + x + frameNumber) % fillColors.length],
         Color.Black,
@@ -77,17 +70,15 @@ let cancel = false;
 let fillChar = SpecialChar.FullBlock;
 
 for (let i = 0; i < totalFrames && !cancel; i++) {
-  context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
+  context.beginDraw(0, 0, screenSize.width, screenSize.height);
 
   drawScreen(fillChar);
 
   context.endDraw();
 
-  requestUpdateConsoleSize();
-  updateInput();
-  const newConsoleSize = getConsoleSizeFromInput();
-  if (newConsoleSize !== null) consoleSize.copyFrom(newConsoleSize);
-  const input = readInput();
+  const newScreenSize = nativeContext.getScreenSize();
+  if (newScreenSize !== null) screenSize.copyFrom(newScreenSize);
+  const input = nativeContext.readInput();
   if (input && input.toLowerCase().indexOf("z") >= 0) cancel = true;
   await delay(1);
   frameNumber++;
@@ -95,16 +86,15 @@ for (let i = 0; i < totalFrames && !cancel; i++) {
 
 const endTime = performance.now();
 
+nativeContext.destroy();
+
 if (!cancel && frameNumber > 0) {
-  clearScreen();
-  context.beginDraw(0, 0, consoleSize.width, consoleSize.height);
+  context.beginDraw(0, 0, screenSize.width, screenSize.height);
   context.color(Color.Green, Color.Black).text(
     `Time to fill screen ${frameNumber} times: ${endTime -
       startTime}ms, fps:${frameNumber / ((endTime - startTime) / 1000)}\n`,
   );
   context.endDraw();
 }
-
-shutdownAnsi();
 
 Deno.exit();

@@ -5,7 +5,7 @@ import {
   Point,
   EngineContext,
 } from "./types.ts";
-import { NativeContext } from "./native/types.ts";
+import { NativeContextDraw } from "./native/types.ts";
 
 export class EngineContextImpl implements EngineContext {
   private bounds = new Rect();
@@ -21,9 +21,9 @@ export class EngineContextImpl implements EngineContext {
   private transformsStack: Point[] = [];
   private clipStack: Rect[] = [];
 
-  private nativeContext: NativeContext;
+  private nativeContext: NativeContextDraw;
 
-  public constructor(nativeContext: NativeContext) {
+  public constructor(nativeContext: NativeContextDraw) {
     this.nativeContext = nativeContext;
   }
 

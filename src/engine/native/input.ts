@@ -32,10 +32,6 @@ export function shutdownInput() {
   Deno.setRaw(Deno.stdin.rid, false);
 }
 
-export function hasInput() {
-  return availableInput.length > 0;
-}
-
 export function readInput() {
   const toReturn = availableInput;
   availableInput = "";

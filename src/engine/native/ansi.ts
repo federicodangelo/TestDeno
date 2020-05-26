@@ -1,4 +1,9 @@
-import { initInput, shutdownInput, readInputBetween } from "./input.ts";
+import {
+  initInput,
+  shutdownInput,
+  readInputBetween,
+  readInput,
+} from "./input.ts";
 import {
   Size,
   Point,
@@ -91,25 +96,17 @@ const AnsiColorCodesBack = [
 
 const encoder = new TextEncoder();
 
-export function initAnsi() {
+const consoleSize = new Size();
+
+function initAnsi() {
   initInput();
   hideCursor();
-  enableMouseReporting();
 }
 
-export function shutdownAnsi() {
+function shutdownAnsi() {
   drawAscii(`${CSI}0m`); //reset color
-  disableMouseReporting();
   showCursor();
   shutdownInput();
-}
-
-function enableMouseReporting() {
-  drawAscii(`${CSI}?9h`);
-}
-
-function disableMouseReporting() {
-  drawAscii(`${CSI}?9l`);
 }
 
 function hideCursor() {
@@ -120,11 +117,11 @@ function showCursor() {
   drawAscii(`${CSI}?25h`);
 }
 
-export function clearScreen() {
+function clearScreen() {
   drawAscii(`${CSI}2J${CSI}0;0H`); //Clear and move top-left
 }
 
-export function requestUpdateConsoleSize() {
+function requestUpdateConsoleSize() {
   const str = `${CSI}?25l` + //hide cursor
     `${CSI}s` + //save cursor position
     `${CSI}999;999H` + //Move to huge bottom / right position
@@ -134,7 +131,7 @@ export function requestUpdateConsoleSize() {
   drawAscii(str);
 }
 
-export function getConsoleSizeFromInput(): Size | null {
+function getConsoleSizeFromInput(): Size | null {
   let line = readInputBetween(CSI, "R");
 
   while (line.length === 0) return null;
@@ -146,11 +143,6 @@ export function getConsoleSizeFromInput(): Size | null {
     .map((x) => parseInt(x));
 
   return new Size(width, height);
-}
-
-export function getMouse(): Point | null {
-  //TODO
-  return null;
 }
 
 function drawAscii(str: string) {
@@ -177,6 +169,7 @@ export function getAnsiNativeContext(): NativeContext {
 
   let buffer: number[] = [];
   let offset = 0;
+  let consoleSize: Size | null = null;
 
   buffer.fill(0, 0, 8192);
 
@@ -234,7 +227,21 @@ export function getAnsiNativeContext(): NativeContext {
     lastDrawX++;
   }
 
+  initAnsi();
+
   return {
+    clearScreen,
+    getScreenSize: () => {
+      requestUpdateConsoleSize();
+      const newSize = getConsoleSizeFromInput();
+      if (newSize !== null) consoleSize = newSize;
+      return consoleSize;
+    },
+    readInput: () => {
+      const newSize = getConsoleSizeFromInput();
+      if (newSize !== null) consoleSize = newSize;
+      return readInput();
+    },
     reset: () => {
       lastDrawX = NaN;
       lastDrawY = NaN;
@@ -264,6 +271,10 @@ export function getAnsiNativeContext(): NativeContext {
         Deno.stdout.writeSync(encoder.encode(str));
       }
       offset = 0;
+    },
+    destroy: () => {
+      clearScreen();
+      shutdownAnsi();
     },
   };
 }

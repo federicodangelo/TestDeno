@@ -1,37 +1,41 @@
 import {
-  initAnsi,
-  shutdownAnsi,
-  requestUpdateConsoleSize,
-  getConsoleSizeFromInput,
-  getMouse as getMouseFromInput,
   getAnsiNativeContext,
-  clearScreen,
 } from "./native/ansi.ts";
-import { Engine, Widget, Size, Point, Rect } from "./types.ts";
+import { Engine, Widget, Size, Point, Rect, EngineContext } from "./types.ts";
 import { EngineContextImpl } from "./context.ts";
-import { readInput } from "./native/input.ts";
+import { NativeContext } from "./native/types.ts";
 
 class EngineImpl implements Engine {
   private children: Widget[] = [];
-  private context = new EngineContextImpl(getAnsiNativeContext());
+  private nativeContext: NativeContext;
+  private context: EngineContextImpl;
   private consoleSize = new Size();
-  private mousePosition = new Point();
   private invalidRects: Rect[] = [];
 
+  constructor() {
+    this.nativeContext = getAnsiNativeContext();
+    this.context = new EngineContextImpl(this.nativeContext);
+  }
+
   async init() {
-    requestUpdateConsoleSize();
-    let consoleSize = getConsoleSizeFromInput();
+    let consoleSize = this.nativeContext.getScreenSize();
     while (consoleSize === null) {
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 1);
       });
-      consoleSize = getConsoleSizeFromInput();
+      consoleSize = this.nativeContext.getScreenSize();
     }
     this.consoleSize.set(consoleSize.width, consoleSize.height);
   }
 
   public draw() {
-    requestUpdateConsoleSize();
+    const newSize = this.nativeContext.getScreenSize();
+    if (newSize !== null && !newSize.equals(this.consoleSize)) {
+      this.consoleSize.set(newSize.width, newSize.height);
+      this.invalidateRect(
+        new Rect(0, 0, this.consoleSize.width, this.consoleSize.height),
+      );
+    }
 
     if (this.invalidRects.length > 0) {
       this.updateLayout();
@@ -90,19 +94,6 @@ class EngineImpl implements Engine {
   }
 
   public update(): void {
-    this.updateInput();
-  }
-
-  private updateInput() {
-    const newSize = getConsoleSizeFromInput();
-    if (newSize !== null && !newSize.equals(this.consoleSize)) {
-      this.consoleSize.set(newSize.width, newSize.height);
-      this.invalidateRect(
-        new Rect(0, 0, this.consoleSize.width, this.consoleSize.height),
-      );
-    }
-    const newMouse = getMouseFromInput();
-    if (newMouse !== null) this.mousePosition.set(newMouse.x, newMouse.y);
   }
 
   public addWidget(widget: Widget): void {
@@ -119,8 +110,7 @@ class EngineImpl implements Engine {
   }
 
   public readInput() {
-    this.updateInput();
-    return readInput();
+    return this.nativeContext.readInput();
   }
 
   public invalidateRect(rect: Rect) {
@@ -135,17 +125,18 @@ class EngineImpl implements Engine {
 
     this.invalidRects.push(rect.clone());
   }
+
+  public destroy() {
+    this.nativeContext.destroy();
+  }
 }
 
 export async function buildEngine() {
-  initAnsi();
-  clearScreen();
   const engine = new EngineImpl();
   await engine.init();
   return engine;
 }
 
 export function destroyEngine(engine: Engine) {
-  clearScreen();
-  shutdownAnsi();
+  (engine as EngineImpl).destroy();
 }
