@@ -48,27 +48,33 @@ mainUI.layout = {
   widthPercent: 100,
   heightPercent: 100,
 };
-mainUI.splitPercent = 75;
+mainUI.splitLayout = {
+  direction: "horizontal",
+  fixed: {
+    panel: "panel2",
+    amount: 30,
+  },
+};
 
-mainUI.rightPanel.border = 2;
-mainUI.rightPanel.backColor = Color.BrightBlack;
+mainUI.panel2.border = 2;
+mainUI.panel2.backColor = Color.BrightBlack;
 
-const playingBox = mainUI.leftPanel;
+const playingBox = mainUI.panel1;
 
-mainUI.leftPanel.title = " Map ";
-mainUI.leftPanel.titleForeColor = Color.BrightWhite;
-mainUI.leftPanel.titleBackColor = Color.Magenta;
-mainUI.leftPanel.borderForeColor = Color.BrightMagenta;
-mainUI.leftPanel.borderBackColor = Color.Magenta;
-mainUI.leftPanel.backColor = Color.Black;
+mainUI.panel1.title = " Map ";
+mainUI.panel1.titleForeColor = Color.BrightWhite;
+mainUI.panel1.titleBackColor = Color.Magenta;
+mainUI.panel1.borderForeColor = Color.BrightMagenta;
+mainUI.panel1.borderBackColor = Color.Magenta;
+mainUI.panel1.backColor = Color.Black;
 
-mainUI.rightPanel.title = " Stats ";
-mainUI.rightPanel.titleForeColor = Color.BrightWhite;
-mainUI.rightPanel.titleBackColor = Color.Blue;
-mainUI.rightPanel.borderForeColor = Color.BrightBlue;
-mainUI.rightPanel.borderBackColor = Color.Blue;
-mainUI.rightPanel.backColor = Color.Blue;
-mainUI.rightPanel.childrenLayout = { type: "vertical", spacing: 1 };
+mainUI.panel2.title = " Stats ";
+mainUI.panel2.titleForeColor = Color.BrightWhite;
+mainUI.panel2.titleBackColor = Color.Blue;
+mainUI.panel2.borderForeColor = Color.BrightBlue;
+mainUI.panel2.borderBackColor = Color.Blue;
+mainUI.panel2.backColor = Color.Blue;
+mainUI.panel2.childrenLayout = { type: "vertical", spacing: 1 };
 
 export function initGame(engine: Engine) {
   characters.forEach((c) => c.parent = playingBox);
@@ -126,6 +132,10 @@ export function updateGame(engine: Engine): boolean {
           break;
         case "k":
           p2.y++;
+          break;
+
+        case String.fromCharCode(27): //Escape
+          running = false;
           break;
 
         case "z":

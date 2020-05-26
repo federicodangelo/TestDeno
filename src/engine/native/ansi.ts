@@ -1,8 +1,6 @@
 import {
   initInput,
   shutdownInput,
-  readInputBetween,
-  readInput,
 } from "./input.ts";
 import {
   Size,
@@ -12,9 +10,12 @@ import {
 } from "./../types.ts";
 import { NativeContext } from "./types.ts";
 
+const ESC = "\u001b";
 const CSI = "\u001b[";
 
 const useCp437 = Deno.build.os === "windows";
+
+let consoleSize: Size | null = null;
 
 const AnsiSpecialChar: number[] = [
   //Block
@@ -95,26 +96,94 @@ const AnsiColorCodesBack = [
 ];
 
 const encoder = new TextEncoder();
+let availableInput = "";
 
-const consoleSize = new Size();
+function clearEscapeSequence(str: string, sequenceChar: string | null = null) {
+  const first = str.indexOf(CSI);
+  if (first < 0) return str;
+
+  let last = first + CSI.length;
+  let found = false;
+  while (last < str.length) {
+    const c = str.charCodeAt(last);
+    if (
+      sequenceChar !== null && c == sequenceChar.charCodeAt(0) ||
+      sequenceChar === null &&
+        (c >= "a".charCodeAt(0) && c <= "z".charCodeAt(0) ||
+          c >= "A".charCodeAt(0) && c <= "Z".charCodeAt(0))
+    ) {
+      found = true;
+      break;
+    }
+    last++;
+  }
+
+  if (!found) return str;
+
+  const before = str.substring(0, first);
+  const after = str.substring(last + 1);
+  return before + after;
+}
+
+function getCursorPositionFromEscapeSequence(sequence: string): Point | null {
+  if (!sequence.startsWith(CSI) || !sequence.endsWith("R")) return null;
+
+  //Cursor position response format is "ESC[_posy_;_pos_x_R"
+  const { [0]: y, [1]: x } = sequence
+    .substring(CSI.length, sequence.length - 1) //Strip starting "ESC["" and ending "R"
+    .split(";")
+    .map((x) => parseInt(x));
+
+  return new Point(x, y);
+}
+
+function processEscapeSequences(input: string): string {
+  let escapeSequence = getEscapeSequence(input);
+  while (escapeSequence !== null) {
+    input = clearEscapeSequence(input);
+    switch (escapeSequence[escapeSequence.length - 1]) {
+      case "R": {
+        //Cursor position
+        const cursorPosition = getCursorPositionFromEscapeSequence(
+          escapeSequence,
+        );
+        if (cursorPosition !== null) {
+          consoleSize = new Size(cursorPosition.x, cursorPosition.y);
+        }
+        break;
+      }
+
+      case "c": {
+        //Device Attributes
+        break;
+      }
+
+      default:
+        //TODO
+        break;
+    }
+    escapeSequence = getEscapeSequence(input);
+  }
+  return input;
+}
+
+function processInput(input: string): void {
+  availableInput += input;
+  availableInput = processEscapeSequences(availableInput);
+}
 
 function initAnsi() {
-  initInput();
-  hideCursor();
+  initInput(processInput);
+  drawAscii(`${CSI}!p`); //reset
+  drawAscii(`${CSI}?25l`); //hide cursor
+  drawAscii(`${CSI}?1h`); //Keypad keys will emit their Application Mode sequences.
+  drawAscii(`${ESC}=`); //Enable keyCursor Keys Application Mode
+  drawAscii(`${CSI}0c`); //query device attributes
 }
 
 function shutdownAnsi() {
-  drawAscii(`${CSI}0m`); //reset color
-  showCursor();
+  drawAscii(`${CSI}!p`); //reset
   shutdownInput();
-}
-
-function hideCursor() {
-  drawAscii(`${CSI}?25l`);
-}
-
-function showCursor() {
-  drawAscii(`${CSI}?25h`);
 }
 
 function clearScreen() {
@@ -131,18 +200,29 @@ function requestUpdateConsoleSize() {
   drawAscii(str);
 }
 
-function getConsoleSizeFromInput(): Size | null {
-  let line = readInputBetween(CSI, "R");
+function getEscapeSequence(str: string, sequenceChar: string | null = null) {
+  const first = str.indexOf("\u001b");
+  if (first < 0) return null;
 
-  while (line.length === 0) return null;
+  let last = first + CSI.length;
+  let found = false;
+  while (last < str.length) {
+    const c = str.charCodeAt(last);
+    if (
+      sequenceChar !== null && c == sequenceChar.charCodeAt(0) ||
+      sequenceChar === null &&
+        (c >= "a".charCodeAt(0) && c <= "z".charCodeAt(0) ||
+          c >= "A".charCodeAt(0) && c <= "Z".charCodeAt(0))
+    ) {
+      found = true;
+      break;
+    }
+    last++;
+  }
 
-  //Cursor position response format is "ESC[_posy_;_pos_x_R"
-  const { [0]: height, [1]: width } = line
-    .substring(CSI.length, line.length - 1) //Strip starting "ESC["" and ending "R"
-    .split(";")
-    .map((x) => parseInt(x));
+  if (!found) return null;
 
-  return new Size(width, height);
+  return str.substring(first, last + 1);
 }
 
 function drawAscii(str: string) {
@@ -169,7 +249,6 @@ export function getAnsiNativeContext(): NativeContext {
 
   let buffer: number[] = [];
   let offset = 0;
-  let consoleSize: Size | null = null;
 
   buffer.fill(0, 0, 8192);
 
@@ -233,14 +312,12 @@ export function getAnsiNativeContext(): NativeContext {
     clearScreen,
     getScreenSize: () => {
       requestUpdateConsoleSize();
-      const newSize = getConsoleSizeFromInput();
-      if (newSize !== null) consoleSize = newSize;
       return consoleSize;
     },
     readInput: () => {
-      const newSize = getConsoleSizeFromInput();
-      if (newSize !== null) consoleSize = newSize;
-      return readInput();
+      const toReturn = availableInput;
+      availableInput = "";
+      return toReturn;
     },
     reset: () => {
       lastDrawX = NaN;

@@ -18,13 +18,13 @@ const fpsLabel = new LabelWidget(
   Color.Blue,
 );
 
-fpsLabel.parent = mainUI.rightPanel;
+fpsLabel.parent = mainUI.panel2;
 
 new LabelWidget(
   "Move P1: W/S/A/D\nMove P2: I/J/K/L\nQuit: Z",
   Color.White,
   Color.Blue,
-).parent = mainUI.rightPanel;
+).parent = mainUI.panel2;
 
 let totalRenderTime = 0;
 let frames = 0;
