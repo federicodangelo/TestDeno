@@ -227,9 +227,9 @@ function getEscapeSequence(str: string, sequenceChar: string | null = null) {
 
 function drawAscii(str: string) {
   if (useCp437) {
-    Deno.stdout.writeSync(encoder.encode(str));
+    Deno.writeAllSync(Deno.stdout, encoder.encode(str));
   } else {
-    Deno.stdout.writeSync(encodeAscii(str));
+    Deno.writeAllSync(Deno.stdout, encodeAscii(str));
   }
 }
 
