@@ -70,10 +70,7 @@ export class SplitPanelContainerWidget extends BaseWidgetContainer {
         }
       },
       customPositionFn: (widget) => {
-        const splitPercent = this.splitLayout?.splitPercent || 50;
         const direction = this.splitLayout?.direction || "horizontal";
-        const fixedPanel = this.splitLayout?.fixed?.panel;
-        const fixedAmount = this.splitLayout?.fixed?.amount || 0;
 
         if (direction === "horizontal") {
           widget.x = this.width - widget.width;
