@@ -8,9 +8,7 @@ import { BaseWidget } from "./widget.ts";
 
 export abstract class BaseWidgetContainer extends BaseWidget
   implements WidgetContainer {
-  private _children: BaseWidget[] = [];
-
-  public border: number = 0;
+  protected _children: BaseWidget[] = [];
 
   public childrenLayout: ChildrenLayout | null = null;
 
@@ -33,19 +31,19 @@ export abstract class BaseWidgetContainer extends BaseWidget
   }
 
   public get innerX() {
-    return this.border;
+    return 0;
   }
 
   public get innerY() {
-    return this.border;
+    return 0;
   }
 
   public get innerWidth() {
-    return this.width - this.border * 2;
+    return this.width;
   }
 
   public get innerHeight() {
-    return this.height - this.border * 2;
+    return this.height;
   }
 
   public get children() {
@@ -102,23 +100,16 @@ export abstract class BaseWidgetContainer extends BaseWidget
     context.pushClip(0, 0, this.width, this.height);
     context.moveCursorTo(0, 0);
     this.drawSelf(context);
-    if (this.border > 0) {
-      context.pushTransform(this.border, this.border);
-      context.pushClip(
-        0,
-        0,
-        this.innerWidth,
-        this.innerHeight,
-      );
-    }
+    this.preDrawChildren(context);
     for (let i = 0; i < this._children.length; i++) {
       this._children[i].draw(context);
     }
-    if (this.border > 0) {
-      context.popClip();
-      context.popTransform();
-    }
+    this.postDrawChildren(context);
     context.popClip();
     context.popTransform();
   }
+
+  protected preDrawChildren(context: EngineContext) {}
+
+  protected postDrawChildren(context: EngineContext) {}
 }

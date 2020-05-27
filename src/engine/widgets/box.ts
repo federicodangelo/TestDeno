@@ -1,4 +1,4 @@
-import { Color, DrawContext } from "../types.ts";
+import { Color, DrawContext, EngineContext } from "../types.ts";
 import { BaseWidgetContainer } from "./widget-container.ts";
 
 export class BoxContainerWidget extends BaseWidgetContainer {
@@ -10,6 +10,7 @@ export class BoxContainerWidget extends BaseWidgetContainer {
   public title: string = "";
   public titleForeColor = Color.White;
   public titleBackColor = Color.Black;
+  public border: number = 0;
 
   constructor(
     border = 1,
@@ -26,6 +27,36 @@ export class BoxContainerWidget extends BaseWidgetContainer {
     this.foreColor = foreColor;
     this.backColor = backColor;
     this.fillChar = fillChar;
+  }
+
+  public get innerX() {
+    return this.border;
+  }
+
+  public get innerY() {
+    return this.border;
+  }
+
+  public get innerWidth() {
+    return this.width - this.border * 2;
+  }
+
+  public get innerHeight() {
+    return this.height - this.border * 2;
+  }
+
+  preDrawChildren(context: EngineContext) {
+    if (this.innerX > 0 || this.innerY > 0) {
+      context.pushTransform(this.innerX, this.innerY);
+      context.pushClip(0, 0, this.innerWidth, this.innerHeight);
+    }
+  }
+
+  postDrawChildren(context: EngineContext) {
+    if (this.innerX > 0 || this.innerY > 0) {
+      context.popClip();
+      context.popTransform();
+    }
   }
 
   drawSelf(context: DrawContext) {
