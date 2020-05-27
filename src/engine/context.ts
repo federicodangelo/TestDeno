@@ -208,6 +208,8 @@ export class EngineContextImpl implements EngineContext {
     height: number,
     char: string,
   ) {
+    if (char.length === 0) return this;
+
     const clip = this.clip;
     const tx = this.tx;
     const ty = this.ty;

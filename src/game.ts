@@ -1,8 +1,69 @@
 import { CharacterWidget } from "./engine/widgets/character.ts";
+import { LabelWidget } from "./engine/widgets/label.ts";
 import { Color, Engine } from "./engine/types.ts";
 import { SplitPanelContainerWidget } from "./engine/widgets/split-panel.ts";
+import { ScrollableContainerWidget } from "./engine/widgets/scrollable.ts";
 
 const NPCS_COUNT = 2;
+const MAP_SIZE = 512;
+const OBSTACLES_COUNT = 512;
+
+export const mainUI = new SplitPanelContainerWidget();
+mainUI.layout = {
+  widthPercent: 100,
+  heightPercent: 100,
+};
+mainUI.splitLayout = {
+  direction: "horizontal",
+  fixed: {
+    panel: "panel2",
+    amount: 30,
+  },
+};
+
+mainUI.panel2.border = 2;
+mainUI.panel2.backColor = Color.BrightBlack;
+
+const playingBox = new ScrollableContainerWidget();
+
+playingBox.setLayout({ heightPercent: 100, widthPercent: 100 });
+playingBox.parent = mainUI.panel1;
+
+mainUI.panel1.title = " Map ";
+mainUI.panel1.titleForeColor = Color.BrightWhite;
+mainUI.panel1.titleBackColor = Color.Magenta;
+mainUI.panel1.borderForeColor = Color.BrightMagenta;
+mainUI.panel1.borderBackColor = Color.Magenta;
+mainUI.panel1.backColor = Color.Black;
+mainUI.panel1.fillChar = "";
+
+mainUI.panel2.title = " Stats ";
+mainUI.panel2.titleForeColor = Color.BrightWhite;
+mainUI.panel2.titleBackColor = Color.Blue;
+mainUI.panel2.borderForeColor = Color.BrightBlue;
+mainUI.panel2.borderBackColor = Color.Blue;
+mainUI.panel2.backColor = Color.Blue;
+mainUI.panel2.childrenLayout = { type: "vertical", spacing: 1 };
+
+const cameraModeLabel = new LabelWidget("", Color.White, Color.Blue);
+cameraModeLabel.parent = mainUI.panel2;
+
+const enum CameraMode {
+  FollowContinuous,
+  FollowDiscrete,
+}
+
+let cameraMode = CameraMode.FollowContinuous;
+
+function updateCameraModeText() {
+  cameraModeLabel.text = "Camera: " +
+    (cameraMode === CameraMode.FollowContinuous ? "Continuous" : "Discrete") +
+    " (F)";
+}
+
+function random<T>(arr: T[]): T {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
 
 const p1 = new CharacterWidget(
   "@",
@@ -43,41 +104,29 @@ const characters = [
   p2,
 ];
 
-export const mainUI = new SplitPanelContainerWidget();
-mainUI.layout = {
-  widthPercent: 100,
-  heightPercent: 100,
-};
-mainUI.splitLayout = {
-  direction: "horizontal",
-  fixed: {
-    panel: "panel2",
-    amount: 30,
-  },
-};
+const obtacleChars: string[] = ["."];
+const obtacleColors: Color[] = [
+  Color.BrightBlack,
+  Color.Green,
+  Color.BrightGreen,
+];
 
-mainUI.panel2.border = 2;
-mainUI.panel2.backColor = Color.BrightBlack;
+for (let i = 0; i < OBSTACLES_COUNT; i++) {
+  const obstacle = new CharacterWidget(
+    random(obtacleChars),
+    random(obtacleColors),
+    Color.Black,
+  );
+  obstacle.x = Math.floor(Math.random() * MAP_SIZE);
+  obstacle.y = Math.floor(Math.random() * MAP_SIZE);
+  obstacle.parent = playingBox;
+}
 
-const playingBox = mainUI.panel1;
+characters.forEach((c) => c.parent = playingBox);
 
-mainUI.panel1.title = " Map ";
-mainUI.panel1.titleForeColor = Color.BrightWhite;
-mainUI.panel1.titleBackColor = Color.Magenta;
-mainUI.panel1.borderForeColor = Color.BrightMagenta;
-mainUI.panel1.borderBackColor = Color.Magenta;
-mainUI.panel1.backColor = Color.Black;
-
-mainUI.panel2.title = " Stats ";
-mainUI.panel2.titleForeColor = Color.BrightWhite;
-mainUI.panel2.titleBackColor = Color.Blue;
-mainUI.panel2.borderForeColor = Color.BrightBlue;
-mainUI.panel2.borderBackColor = Color.Blue;
-mainUI.panel2.backColor = Color.Blue;
-mainUI.panel2.childrenLayout = { type: "vertical", spacing: 1 };
+updateCameraModeText();
 
 export function initGame(engine: Engine) {
-  characters.forEach((c) => c.parent = playingBox);
   engine.addWidget(mainUI);
 }
 
@@ -141,18 +190,49 @@ export function updateGame(engine: Engine): boolean {
         case "z":
           running = false;
           break;
+
+        case "f":
+          if (cameraMode === CameraMode.FollowContinuous) {
+            cameraMode = CameraMode.FollowDiscrete;
+          } else {
+            cameraMode = CameraMode.FollowContinuous;
+          }
+          updateCameraModeText();
+          break;
       }
     });
   }
 
   for (let i = 0; i < characters.length; i++) {
     const char = characters[i];
-    char.x = Math.max(Math.min(char.x, playingBox.innerWidth - char.width), 0);
-    char.y = Math.max(
-      Math.min(char.y, playingBox.innerHeight - char.height),
-      0,
-    );
+    char.x = Math.max(Math.min(char.x, MAP_SIZE - char.width), 0);
+    char.y = Math.max(Math.min(char.y, MAP_SIZE - char.height), 0);
   }
+
+  let newOffsetX = playingBox.offsetX;
+  let newOffsetY = playingBox.offsetY;
+
+  if (cameraMode === CameraMode.FollowContinuous) {
+    newOffsetX = -p1.x + Math.floor(playingBox.width * 0.5);
+    newOffsetY = -p1.y + Math.floor(playingBox.height * 0.5);
+  } else {
+    if (p1.x > -playingBox.offsetX + playingBox.width * 0.85) {
+      newOffsetX = playingBox.offsetX - Math.ceil(playingBox.width * 0.35);
+    } else if (p1.x < -playingBox.offsetX + playingBox.width * 0.15) {
+      newOffsetX = playingBox.offsetX + Math.ceil(playingBox.width * 0.35);
+    }
+
+    if (p1.y > -playingBox.offsetY + playingBox.height * 0.85) {
+      newOffsetY = playingBox.offsetY - Math.ceil(playingBox.height * 0.35);
+    } else if (p1.y < -playingBox.offsetY + playingBox.height * 0.15) {
+      newOffsetY = playingBox.offsetY + Math.ceil(playingBox.height * 0.35);
+    }
+  }
+
+  playingBox.setOffset(
+    Math.max(Math.min(newOffsetX, 0), -(MAP_SIZE - playingBox.width)),
+    Math.max(Math.min(newOffsetY, 0), -(MAP_SIZE - playingBox.height)),
+  );
 
   return running;
 }

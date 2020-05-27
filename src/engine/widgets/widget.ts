@@ -16,7 +16,6 @@ export abstract class BaseWidget implements Widget {
   private _parent: WidgetContainer | null = null;
   private _engine: Engine | null = null;
   private _boundingBox: Rect = new Rect();
-  private _boundingBoxDirty: boolean = true;
 
   public layout: WidgetLayout | null = null;
 
@@ -41,8 +40,9 @@ export abstract class BaseWidget implements Widget {
 
   public set x(v: number) {
     if (v !== this._x) {
+      this.invalidate();
       this._x = v;
-      this.onTransformChanged();
+      this.invalidate();
     }
   }
 
@@ -52,8 +52,9 @@ export abstract class BaseWidget implements Widget {
 
   public set y(v: number) {
     if (v !== this._y) {
+      this.invalidate();
       this._y = v;
-      this.onTransformChanged();
+      this.invalidate();
     }
   }
 
@@ -63,8 +64,9 @@ export abstract class BaseWidget implements Widget {
 
   public set width(v: number) {
     if (v !== this._width) {
+      this.invalidate();
       this._width = v;
-      this.onTransformChanged();
+      this.invalidate();
     }
   }
 
@@ -74,8 +76,9 @@ export abstract class BaseWidget implements Widget {
 
   public set height(v: number) {
     if (v !== this._height) {
+      this.invalidate();
       this._height = v;
-      this.onTransformChanged();
+      this.invalidate();
     }
   }
 
@@ -85,6 +88,7 @@ export abstract class BaseWidget implements Widget {
 
   public set parent(v: WidgetContainer | null) {
     if (v !== this._parent) {
+      this.invalidate();
       if (this._parent !== null) {
         const index = this._parent.children.indexOf(this);
         if (index >= 0) this._parent.children.splice(index, 1);
@@ -96,13 +100,8 @@ export abstract class BaseWidget implements Widget {
       } else {
         this.engine = null;
       }
-      this.onTransformChanged();
+      this.invalidate();
     }
-  }
-
-  private onTransformChanged() {
-    this._boundingBoxDirty = true;
-    this.invalidate();
   }
 
   public updateLayout(parentWidth: number, parentHeight: number): void {
@@ -153,33 +152,20 @@ export abstract class BaseWidget implements Widget {
   protected abstract drawSelf(context: DrawContext): void;
 
   public getBoundingBox() {
-    if (this._boundingBoxDirty) {
-      this._boundingBox.set(this._x, this._y, this._width, this._height);
-      let p = this._parent;
-      while (p !== null) {
-        this._boundingBox.x += p.x + p.innerX;
-        this._boundingBox.y += p.y + p.innerY;
-        p = p.parent;
-      }
-      this._boundingBoxDirty = false;
+    this._boundingBox.set(this._x, this._y, this._width, this._height);
+    let p = this._parent;
+    while (p !== null) {
+      this._boundingBox.x += p.x + p.innerX;
+      this._boundingBox.y += p.y + p.innerY;
+      p = p.parent;
     }
 
     return this._boundingBox;
   }
 
-  private lastInvalidatedRect = new Rect();
-
   public invalidate() {
     const engine = this.engine;
     const bbox = this.getBoundingBox();
-    if (
-      this.lastInvalidatedRect.width !== 0 &&
-      this.lastInvalidatedRect.height !== 0 &&
-      !this.lastInvalidatedRect.equals(bbox)
-    ) {
-      engine?.invalidateRect(this.lastInvalidatedRect);
-    }
     engine?.invalidateRect(bbox);
-    this.lastInvalidatedRect.copyFrom(bbox);
   }
 }

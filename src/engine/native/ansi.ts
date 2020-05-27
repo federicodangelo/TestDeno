@@ -176,9 +176,9 @@ function initAnsi() {
   initInput(processInput);
   drawAscii(`${CSI}!p`); //reset
   drawAscii(`${CSI}?25l`); //hide cursor
-  drawAscii(`${CSI}?1h`); //Keypad keys will emit their Application Mode sequences.
-  drawAscii(`${ESC}=`); //Enable keyCursor Keys Application Mode
-  drawAscii(`${CSI}0c`); //query device attributes
+  //drawAscii(`${CSI}?1h`); //Keypad keys will emit their Application Mode sequences.
+  //drawAscii(`${ESC}=`); //Enable keyCursor Keys Application Mode
+  //drawAscii(`${CSI}0c`); //query device attributes
 }
 
 function shutdownAnsi() {
@@ -342,10 +342,10 @@ export function getAnsiNativeContext(): NativeContext {
         for (let i = 0; i < offset; i++) {
           codes8[i] = buffer[i];
         }
-        Deno.stdout.writeSync(codes8);
+        Deno.writeAllSync(Deno.stdout, codes8);
       } else {
         const str = String.fromCharCode(...buffer.slice(0, offset));
-        Deno.stdout.writeSync(encoder.encode(str));
+        Deno.writeAllSync(Deno.stdout, encoder.encode(str));
       }
       offset = 0;
     },
