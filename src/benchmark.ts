@@ -2,7 +2,7 @@ import {
   getAnsiNativeContext,
 } from "./engine/native/ansi.ts";
 import { delay } from "./utils.ts";
-import { Color, SpecialChar, Size } from "./engine/types.ts";
+import { FixedColor, SpecialChar, Size, Color } from "./engine/types.ts";
 import { EngineContextImpl } from "./engine/context.ts";
 
 const nativeContext = getAnsiNativeContext();
@@ -22,26 +22,26 @@ screenSize.copyFrom(tmp);
 
 context.beginDraw(0, 0, screenSize.width, screenSize.height);
 
-context.color(Color.Blue, Color.Black).text("Starting test\n");
+context.color(FixedColor.Blue, FixedColor.Black).text("Starting test\n");
 
-context.color(Color.Blue, Color.Black).text("Console dimensions:");
+context.color(FixedColor.Blue, FixedColor.Black).text("Console dimensions:");
 
-context.color(Color.Black, Color.White).text(
+context.color(FixedColor.Black, FixedColor.White).text(
   `${screenSize.width}x${screenSize.height}`,
 );
 
-context.color(Color.White, Color.Black).text("\n");
+context.color(FixedColor.White, FixedColor.Black).text("\n");
 
 context.endDraw();
 
 await delay(1000);
 
 const fillColors: Color[] = [
-  Color.BrightRed,
-  Color.BrightCyan,
-  Color.BrightBlue,
-  Color.BrightGreen,
-  Color.BrightYellow,
+  FixedColor.BrightRed,
+  FixedColor.BrightCyan,
+  FixedColor.BrightBlue,
+  FixedColor.BrightGreen,
+  FixedColor.BrightYellow,
 ];
 
 let frameNumber = 0;
@@ -55,7 +55,7 @@ function drawScreen(c: number) {
     for (let x = 1; x < screenSize.width - 1; x++) {
       context.color(
         fillColors[(y + x + frameNumber) % fillColors.length],
-        Color.Black,
+        FixedColor.Black,
       ).specialChar(
         c,
       );
@@ -90,7 +90,7 @@ nativeContext.destroy();
 
 if (!cancel && frameNumber > 0) {
   context.beginDraw(0, 0, screenSize.width, screenSize.height);
-  context.color(Color.Green, Color.Black).text(
+  context.color(FixedColor.Green, FixedColor.Black).text(
     `Time to fill screen ${frameNumber} times: ${endTime -
       startTime}ms, fps:${frameNumber / ((endTime - startTime) / 1000)}\n`,
   );

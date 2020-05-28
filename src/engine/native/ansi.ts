@@ -57,44 +57,6 @@ const AnsiSpecialChar: number[] = [
   useCp437 ? 206 : "╬".charCodeAt(0),
 ];
 
-const AnsiColorCodesFront = [
-  "30",
-  "31",
-  "32",
-  "33",
-  "34",
-  "35",
-  "36",
-  "37",
-  "90",
-  "91",
-  "92",
-  "93",
-  "94",
-  "95",
-  "96",
-  "97",
-];
-
-const AnsiColorCodesBack = [
-  "40",
-  "41",
-  "42",
-  "43",
-  "44",
-  "45",
-  "46",
-  "47",
-  "100",
-  "101",
-  "102",
-  "103",
-  "104",
-  "105",
-  "106",
-  "107",
-];
-
 const encoder = new TextEncoder();
 let availableInput = "";
 
@@ -289,16 +251,19 @@ export function getAnsiNativeContext(): NativeContext {
       lastDrawY = screenY;
     }
 
-    if (
-      lastDrawForeColor !== foreColor ||
-      lastDrawBackColor !== backColor
-    ) {
+    if (lastDrawForeColor !== foreColor) {
       addToBuffer(CSI);
-      addToBuffer(AnsiColorCodesFront[foreColor]);
-      addToBuffer(";");
-      addToBuffer(AnsiColorCodesBack[backColor]);
+      addToBuffer("38;5;");
+      addToBuffer(foreColor.toFixed(0));
       addToBuffer("m");
       lastDrawForeColor = foreColor;
+    }
+
+    if (lastDrawBackColor !== backColor) {
+      addToBuffer(CSI);
+      addToBuffer("48;5;");
+      addToBuffer(backColor.toFixed(0));
+      addToBuffer("m");
       lastDrawBackColor = backColor;
     }
 
@@ -329,8 +294,8 @@ export function getAnsiNativeContext(): NativeContext {
     setChar,
     setSpecialChar: (
       char: SpecialChar,
-      foreColor: Color,
-      backColor: Color,
+      foreColor: number,
+      backColor: number,
       x: number,
       y: number,
     ) => {

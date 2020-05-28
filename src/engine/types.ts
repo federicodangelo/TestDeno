@@ -38,23 +38,45 @@ export const enum SpecialChar {
   DoubleConnectorCross,
 }
 
-export const enum Color {
-  Black,
-  Red,
-  Green,
-  Yellow,
-  Blue,
-  Magenta,
-  Cyan,
-  White,
-  BrightBlack,
-  BrightRed,
-  BrightGreen,
-  BrightYellow,
-  BrightBlue,
-  BrightMagenta,
-  BrightCyan,
-  BrightWhite,
+export const enum FixedColor {
+  Black = 0,
+  Red = 1,
+  Green = 2,
+  Yellow = 3,
+  Blue = 4,
+  Magenta = 5,
+  Cyan = 6,
+  White = 7,
+  BrightBlack = 8,
+  BrightRed = 9,
+  BrightGreen = 10,
+  BrightYellow = 11,
+  BrightBlue = 12,
+  BrightMagenta = 13,
+  BrightCyan = 14,
+  BrightWhite = 15,
+}
+
+export const enum Grayscale {
+  Black = 232,
+  White = 255,
+}
+
+export const enum Intensity {
+  I0 = 0,
+  I20 = 1,
+  I40 = 2,
+  I60 = 3,
+  I80 = 4,
+  I100 = 5,
+}
+
+export type RGB = number;
+
+export type Color = FixedColor | Grayscale | RGB;
+
+export function rgb(r: Intensity, g: Intensity, b: Intensity): RGB {
+  return 16 + 36 * r + 6 * g + b;
 }
 
 export interface WidgetLayout {
@@ -246,7 +268,7 @@ export class Rect {
 export interface DrawContext {
   moveCursorTo(x: number, y: number): EngineContext;
 
-  color(foreColor: Color, backColor: Color): EngineContext;
+  color(foreColor: FixedColor, backColor: FixedColor): EngineContext;
   resetColor(): EngineContext;
 
   text(str: string): EngineContext;

@@ -1,4 +1,4 @@
-import { Color, DrawContext, EngineContext } from "../types.ts";
+import { FixedColor, Color, DrawContext, EngineContext } from "../types.ts";
 import { BaseWidgetContainer } from "./widget-container.ts";
 
 export class BoxContainerWidget extends BaseWidgetContainer {
@@ -8,16 +8,16 @@ export class BoxContainerWidget extends BaseWidgetContainer {
   public borderBackColor: Color;
   public fillChar: string;
   public title: string = "";
-  public titleForeColor = Color.White;
-  public titleBackColor = Color.Black;
+  public titleForeColor = FixedColor.White;
+  public titleBackColor = FixedColor.Black;
   public border: number = 0;
 
   constructor(
     border = 1,
-    borderForeColor = Color.White,
-    borderBackColor = Color.Black,
-    foreColor = Color.White,
-    backColor = Color.Black,
+    borderForeColor = FixedColor.White,
+    borderBackColor = FixedColor.Black,
+    foreColor = FixedColor.White,
+    backColor = FixedColor.Black,
     fillChar = " ",
   ) {
     super();

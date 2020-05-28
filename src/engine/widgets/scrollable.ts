@@ -1,4 +1,4 @@
-import { Color, DrawContext, EngineContext } from "../types.ts";
+import { FixedColor, Color, DrawContext, EngineContext } from "../types.ts";
 import { BaseWidgetContainer } from "./widget-container.ts";
 
 export class ScrollableContainerWidget extends BaseWidgetContainer {
@@ -34,8 +34,8 @@ export class ScrollableContainerWidget extends BaseWidgetContainer {
   }
 
   constructor(
-    foreColor = Color.White,
-    backColor = Color.Black,
+    foreColor = FixedColor.White,
+    backColor = FixedColor.Black,
     fillChar = " ",
   ) {
     super();

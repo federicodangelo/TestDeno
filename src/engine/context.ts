@@ -4,6 +4,7 @@ import {
   Rect,
   Point,
   EngineContext,
+  FixedColor,
 } from "./types.ts";
 import { NativeContextDraw } from "./native/types.ts";
 
@@ -15,8 +16,8 @@ export class EngineContextImpl implements EngineContext {
 
   private x: number = 0;
   private y: number = 0;
-  private foreColor = Color.White;
-  private backColor = Color.Black;
+  private foreColor = FixedColor.White;
+  private backColor = FixedColor.Black;
 
   private transformsStack: Point[] = [];
   private clipStack: Rect[] = [];
@@ -98,8 +99,8 @@ export class EngineContextImpl implements EngineContext {
   }
 
   public resetColor() {
-    this.foreColor = Color.White;
-    this.backColor = Color.Black;
+    this.foreColor = FixedColor.White;
+    this.backColor = FixedColor.Black;
     return this;
   }
 

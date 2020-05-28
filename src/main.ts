@@ -1,5 +1,5 @@
 import { delay } from "./utils.ts";
-import { Color } from "./engine/types.ts";
+import { FixedColor } from "./engine/types.ts";
 import { buildEngine, destroyEngine } from "./engine/engine.ts";
 import { LabelWidget } from "./engine/widgets/label.ts";
 import { initGame, updateGame, mainUI } from "./game.ts";
@@ -14,16 +14,16 @@ const TARGET_FPS = 10;
 
 const fpsLabel = new LabelWidget(
   "FPS: 0.00\nRender Time: 0.00ms",
-  Color.White,
-  Color.Blue,
+  FixedColor.White,
+  mainUI.panel2.backColor,
 );
 
 fpsLabel.parent = mainUI.panel2;
 
 new LabelWidget(
   "Move P1: W/S/A/D\nMove P2: I/J/K/L\nQuit: Z",
-  Color.White,
-  Color.Blue,
+  FixedColor.White,
+  mainUI.panel2.backColor,
 ).parent = mainUI.panel2;
 
 let totalRenderTime = 0;
