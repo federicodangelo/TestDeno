@@ -60,33 +60,6 @@ const AnsiSpecialChar: number[] = [
 const encoder = new TextEncoder();
 let availableInput = "";
 
-function clearEscapeSequence(str: string, sequenceChar: string | null = null) {
-  const first = str.indexOf(CSI);
-  if (first < 0) return str;
-
-  let last = first + CSI.length;
-  let found = false;
-  while (last < str.length) {
-    const c = str.charCodeAt(last);
-    if (
-      sequenceChar !== null && c == sequenceChar.charCodeAt(0) ||
-      sequenceChar === null &&
-        (c >= "a".charCodeAt(0) && c <= "z".charCodeAt(0) ||
-          c >= "A".charCodeAt(0) && c <= "Z".charCodeAt(0))
-    ) {
-      found = true;
-      break;
-    }
-    last++;
-  }
-
-  if (!found) return str;
-
-  const before = str.substring(0, first);
-  const after = str.substring(last + 1);
-  return before + after;
-}
-
 function getCursorPositionFromEscapeSequence(sequence: string): Point | null {
   if (!sequence.startsWith(CSI) || !sequence.endsWith("R")) return null;
 
@@ -100,14 +73,14 @@ function getCursorPositionFromEscapeSequence(sequence: string): Point | null {
 }
 
 function processEscapeSequences(input: string): string {
-  let escapeSequence = getEscapeSequence(input);
-  while (escapeSequence !== null) {
-    input = clearEscapeSequence(input);
-    switch (escapeSequence[escapeSequence.length - 1]) {
+  let result = getEscapeSequence(input);
+  while (result !== null) {
+    input = result.remaining;
+    switch (result.sequence[result.sequence.length - 1]) {
       case "R": {
         //Cursor position
         const cursorPosition = getCursorPositionFromEscapeSequence(
-          escapeSequence,
+          result.sequence,
         );
         if (cursorPosition !== null) {
           consoleSize = new Size(cursorPosition.x, cursorPosition.y);
@@ -124,7 +97,7 @@ function processEscapeSequences(input: string): string {
         //TODO
         break;
     }
-    escapeSequence = getEscapeSequence(input);
+    result = getEscapeSequence(input);
   }
   return input;
 }
@@ -184,7 +157,12 @@ function getEscapeSequence(str: string, sequenceChar: string | null = null) {
 
   if (!found) return null;
 
-  return str.substring(first, last + 1);
+  const sequence = str.substring(first, last + 1);
+  const before = str.substring(0, first);
+  const after = str.substring(last + 1);
+  const remaining = before + after;
+
+  return { sequence, remaining };
 }
 
 function drawAscii(str: string) {
