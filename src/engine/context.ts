@@ -185,19 +185,19 @@ export class EngineContextImpl implements EngineContext {
     }
 
     this.moveCursorTo(x, y);
-    this.specialChar(SpecialChar.DoubleCornerTopLeft);
-    this.specialCharTimes(SpecialChar.DoubleHorizontal, width - 2);
-    this.specialChar(SpecialChar.DoubleCornerTopRight);
+    this.specialChar(SpecialChar.CornerTopLeft);
+    this.specialCharTimes(SpecialChar.Horizontal, width - 2);
+    this.specialChar(SpecialChar.CornerTopRight);
     for (let i = 0; i < height - 2; i++) {
       this.moveCursorTo(x, y + 1 + i);
-      this.specialChar(SpecialChar.DoubleVertical);
+      this.specialChar(SpecialChar.Vertical);
       this.moveCursorTo(x + width - 1, y + 1 + i);
-      this.specialChar(SpecialChar.DoubleVertical);
+      this.specialChar(SpecialChar.Vertical);
     }
     this.moveCursorTo(x, y + height - 1);
-    this.specialChar(SpecialChar.DoubleCornerBottomLeft);
-    this.specialCharTimes(SpecialChar.DoubleHorizontal, width - 2);
-    this.specialChar(SpecialChar.DoubleCornerBottomRight);
+    this.specialChar(SpecialChar.CornerBottomLeft);
+    this.specialCharTimes(SpecialChar.Horizontal, width - 2);
+    this.specialChar(SpecialChar.CornerBottomRight);
 
     return this;
   }
