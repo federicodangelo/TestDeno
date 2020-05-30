@@ -9,7 +9,7 @@ while (true) {
   const input = engine.readInput();
 
   if (input) {
-    console.log("Read input: " + input.replace("\u001b", "ESC"));
+    console.log("Read input: " + input.split("\u001b").join("ESC"));
 
     if (input.indexOf(ESC) < 0 && input.indexOf("z") >= 0) {
       break;
