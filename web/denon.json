@@ -1,11 +1,15 @@
 {
   "$schema": "https://deno.land/x/denon/schema.json",
   "importmap": "../importmap.json",
-  "allow": ["hrtime"],
   "unstable": true,
   "scripts": {
     "dev": {
-      "cmd": "src/main.ts"
+      "allow": ["hrtime", "net", "read"],
+      "cmd": "src/server.ts"
+    },
+    "bundle": {
+      "tsconfig": "../tsconfig.json",
+      "cmd": "deno bundle src/main.ts ../doc/bundle.js"
     }
   },
   "watcher": {

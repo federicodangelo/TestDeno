@@ -3,6 +3,6 @@
   "editor.defaultFormatter": "denoland.vscode-deno",
   "deno.enable": true,
   "deno.unstable": true,
-  "deno.importmap": "importmap.json"
-
+  "deno.importmap": "importmap.json",
+  "deno.tsconfig": "tsconfig.json"
 }

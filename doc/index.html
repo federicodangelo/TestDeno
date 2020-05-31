@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+    <style>
+        body {
+          margin: 0;
+          padding: 0;
+          background: #222;
+          touch-action: none;
+          -ms-touch-action: none;
+          overflow: hidden;
+        }
+    </style>
+  
+    <body>
+    </body>
+  
+    <script type="module">
+        import * as game from "/bundle.js";
+        game.run();
+        var script = document.createElement('script');
+        script.onload = function() {
+            var stats = new Stats();
+            document.body.appendChild(stats.dom);
+            requestAnimationFrame(function loop() {
+                stats.update();
+                requestAnimationFrame(loop);
+            });
+        };
+        script.src = '//mrdoob.github.io/stats.js/build/stats.min.js';
+        document.head.appendChild(script);
+    </script>
+</html>
