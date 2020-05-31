@@ -6,9 +6,6 @@
   "scripts": {
     "dev": {
       "cmd": "src/main.ts"
-    },
-    "bench": {
-      "cmd": "src/benchmark.ts"
     }
   },
   "watcher": {

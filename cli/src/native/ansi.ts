@@ -58,63 +58,6 @@ const AnsiSpecialChar: number[] = [
 ];
 
 const encoder = new TextEncoder();
-let availableInput = "";
-
-function getCursorPositionFromEscapeSequence(sequence: string): Point | null {
-  if (!sequence.startsWith(CSI) || !sequence.endsWith("R")) return null;
-
-  //Cursor position response format is "ESC[_posy_;_pos_x_R"
-  const { [0]: y, [1]: x } = sequence
-    .substring(CSI.length, sequence.length - 1) //Strip starting "ESC["" and ending "R"
-    .split(";")
-    .map((x) => parseInt(x));
-
-  return new Point(x, y);
-}
-
-function processEscapeSequences(input: string): string {
-  let result = getEscapeSequence(input);
-  while (result !== null) {
-    input = result.remaining;
-    switch (result.sequence[result.sequence.length - 1]) {
-      case "R": {
-        //Cursor position
-        const cursorPosition = getCursorPositionFromEscapeSequence(
-          result.sequence,
-        );
-        if (cursorPosition !== null) {
-          consoleSize = new Size(cursorPosition.x, cursorPosition.y);
-        }
-        break;
-      }
-
-      case "c": {
-        //Device Attributes
-        break;
-      }
-
-      default:
-        //TODO
-        break;
-    }
-    result = getEscapeSequence(input);
-  }
-  return input;
-}
-
-function processInput(input: string): void {
-  availableInput += input;
-  availableInput = processEscapeSequences(availableInput);
-}
-
-function initAnsi() {
-  initInput(processInput);
-  drawAscii(`${CSI}!p`); //reset
-  drawAscii(`${CSI}?25l`); //hide cursor
-  //drawAscii(`${CSI}?1h`); //Keypad keys will emit their Application Mode sequences.
-  //drawAscii(`${ESC}=`); //Enable keyCursor Keys Application Mode
-  //drawAscii(`${CSI}0c`); //query device attributes
-}
 
 function shutdownAnsi() {
   drawAscii(`${CSI}!p`); //reset
@@ -123,16 +66,6 @@ function shutdownAnsi() {
 
 function clearScreen() {
   drawAscii(`${CSI}2J${CSI}0;0H`); //Clear and move top-left
-}
-
-function requestUpdateConsoleSize() {
-  const str = `${CSI}?25l` + //hide cursor
-    `${CSI}s` + //save cursor position
-    `${CSI}999;999H` + //Move to huge bottom / right position
-    `${CSI}6n` + //request cursor position
-    `${CSI}u`; //restore cursor position
-
-  drawAscii(str);
 }
 
 function getEscapeSequence(str: string, sequenceChar: string | null = null) {
@@ -186,6 +119,10 @@ export function getAnsiNativeContext(): NativeContext {
   let lastDrawBackColor: Color | null = null;
   let lastDrawX: number = NaN;
   let lastDrawY: number = NaN;
+  let screenSizeChangedListeners: ((size: Size) => void)[] = [];
+  let inputListeners: ((intut: string) => void)[] = [];
+  let availableInput = "";
+  let pendingRequestUpdateConsoleSize = false;
 
   let buffer: number[] = [];
   let offset = 0;
@@ -249,48 +186,127 @@ export function getAnsiNativeContext(): NativeContext {
     lastDrawX++;
   }
 
+  function getCursorPositionFromEscapeSequence(sequence: string): Point | null {
+    if (!sequence.startsWith(CSI) || !sequence.endsWith("R")) return null;
+
+    //Cursor position response format is "ESC[_posy_;_pos_x_R"
+    const { [0]: y, [1]: x } = sequence
+      .substring(CSI.length, sequence.length - 1) //Strip starting "ESC["" and ending "R"
+      .split(";")
+      .map((x) => parseInt(x));
+
+    return new Point(x, y);
+  }
+
+  function processEscapeSequences(input: string): string {
+    let result = getEscapeSequence(input);
+    while (result !== null) {
+      input = result.remaining;
+      switch (result.sequence[result.sequence.length - 1]) {
+        case "R": {
+          //Cursor position
+          const cursorPosition = getCursorPositionFromEscapeSequence(
+            result.sequence,
+          );
+          if (cursorPosition !== null) {
+            const newSize = new Size(cursorPosition.x, cursorPosition.y);
+            consoleSize = newSize;
+            screenSizeChangedListeners.forEach((l) => l(newSize));
+            pendingRequestUpdateConsoleSize = false;
+          }
+          break;
+        }
+
+        case "c": {
+          //Device Attributes
+          break;
+        }
+
+        default:
+          //TODO
+          break;
+      }
+      result = getEscapeSequence(input);
+    }
+    return input;
+  }
+
+  function processInput(input: string): void {
+    availableInput += input;
+    availableInput = processEscapeSequences(availableInput);
+    if (availableInput.length > 0) {
+      inputListeners.forEach((l) => l(availableInput));
+      availableInput = "";
+    }
+  }
+
+  function requestUpdateConsoleSize() {
+    if (pendingRequestUpdateConsoleSize) return;
+    pendingRequestUpdateConsoleSize = true;
+
+    const str = `${CSI}?25l` + //hide cursor
+      `${CSI}s` + //save cursor position
+      `${CSI}999;999H` + //Move to huge bottom / right position
+      `${CSI}6n` + //request cursor position
+      `${CSI}u`; //restore cursor position
+
+    drawAscii(str);
+  }
+
+  function initAnsi() {
+    initInput(processInput);
+    drawAscii(`${CSI}!p`); //reset
+    drawAscii(`${CSI}?25l`); //hide cursor
+  }
+
   initAnsi();
 
   return {
-    clearScreen,
-    getScreenSize: () => {
-      requestUpdateConsoleSize();
-      return consoleSize;
-    },
-    readInput: () => {
-      const toReturn = availableInput;
-      availableInput = "";
-      return toReturn;
-    },
-    reset: () => {
-      lastDrawX = NaN;
-      lastDrawY = NaN;
-      lastDrawForeColor = null;
-      lastDrawBackColor = null;
-      offset = 0;
-    },
-    setChar,
-    setSpecialChar: (
-      char: SpecialChar,
-      foreColor: number,
-      backColor: number,
-      x: number,
-      y: number,
-    ) => {
-      setChar(AnsiSpecialChar[char], foreColor, backColor, x, y);
-    },
-    apply: () => {
-      if (useCp437) {
-        const codes8 = new Uint8Array(offset);
-        for (let i = 0; i < offset; i++) {
-          codes8[i] = buffer[i];
+    screen: {
+      clearScreen,
+      getScreenSize: () => {
+        requestUpdateConsoleSize();
+        return consoleSize;
+      },
+      onScreenSizeChanged: (listener) => {
+        screenSizeChangedListeners.push(listener);
+      },
+      reset: () => {
+        requestUpdateConsoleSize();
+        lastDrawX = NaN;
+        lastDrawY = NaN;
+        lastDrawForeColor = null;
+        lastDrawBackColor = null;
+        offset = 0;
+      },
+      setChar,
+      setSpecialChar: (
+        char: SpecialChar,
+        foreColor: number,
+        backColor: number,
+        x: number,
+        y: number,
+      ) => {
+        setChar(AnsiSpecialChar[char], foreColor, backColor, x, y);
+      },
+      apply: () => {
+        if (useCp437) {
+          const codes8 = new Uint8Array(offset);
+          for (let i = 0; i < offset; i++) {
+            codes8[i] = buffer[i];
+          }
+          Deno.writeAllSync(Deno.stdout, codes8);
+        } else {
+          const str = String.fromCharCode(...buffer.slice(0, offset));
+          Deno.writeAllSync(Deno.stdout, encoder.encode(str));
         }
-        Deno.writeAllSync(Deno.stdout, codes8);
-      } else {
-        const str = String.fromCharCode(...buffer.slice(0, offset));
-        Deno.writeAllSync(Deno.stdout, encoder.encode(str));
-      }
-      offset = 0;
+        offset = 0;
+      },
+    },
+    input: {
+      onInput: (listener) => {
+        inputListeners.push(listener);
+      },
     },
     destroy: () => {
       clearScreen();

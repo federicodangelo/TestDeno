@@ -6,7 +6,7 @@ import {
   EngineContext,
   FixedColor,
 } from "./types.ts";
-import { NativeContextDraw } from "./native-types.ts";
+import { NativeContextScreen } from "./native-types.ts";
 
 export class EngineContextImpl implements EngineContext {
   private bounds = new Rect();
@@ -22,9 +22,9 @@ export class EngineContextImpl implements EngineContext {
   private transformsStack: Point[] = [];
   private clipStack: Rect[] = [];
 
-  private nativeContext: NativeContextDraw;
+  private nativeContext: NativeContextScreen;
 
-  public constructor(nativeContext: NativeContextDraw) {
+  public constructor(nativeContext: NativeContextScreen) {
     this.nativeContext = nativeContext;
   }
 

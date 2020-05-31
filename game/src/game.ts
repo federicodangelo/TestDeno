@@ -49,6 +49,12 @@ mainUI.panel2.borderBackColor = rgb(Intensity.I0, Intensity.I20, Intensity.I40);
 mainUI.panel2.backColor = rgb(Intensity.I0, Intensity.I20, Intensity.I40);
 mainUI.panel2.childrenLayout = { type: "vertical", spacing: 1 };
 
+new LabelWidget(
+  "Move P1: W/S/A/D\nMove P2: I/J/K/L\nQuit: Z",
+  FixedColor.White,
+  mainUI.panel2.backColor,
+).parent = mainUI.panel2;
+
 const cameraModeLabel = new LabelWidget(
   "",
   FixedColor.White,
@@ -135,8 +141,15 @@ characters.forEach((c) => c.parent = playingBox);
 
 updateCameraModeText();
 
+let pendingInput = "";
+
+function onInput(input: string) {
+  pendingInput += input;
+}
+
 export function initGame(engine: Engine) {
   engine.addWidget(mainUI);
+  engine.onInput(onInput);
 }
 
 export function updateGame(engine: Engine): boolean {
@@ -160,10 +173,8 @@ export function updateGame(engine: Engine): boolean {
     }
   }
 
-  const input = engine.readInput();
-
-  if (input) {
-    const uniqueChars = input.split("").map((c) => c.toLowerCase());
+  if (pendingInput) {
+    const uniqueChars = pendingInput.split("").map((c) => c.toLowerCase());
     uniqueChars.forEach((c) => {
       switch (c) {
         case "a":
@@ -210,6 +221,8 @@ export function updateGame(engine: Engine): boolean {
           break;
       }
     });
+
+    pendingInput = "";
   }
 
   for (let i = 0; i < characters.length; i++) {

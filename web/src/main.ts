@@ -1,11 +1,10 @@
-import { delay } from "./utils.ts";
 import { FixedColor } from "engine/types.ts";
 import { buildEngine, destroyEngine } from "engine/engine.ts";
 import { LabelWidget } from "engine/widgets/label.ts";
 import { initGame, updateGame, mainUI } from "game/game.ts";
-import { getAnsiNativeContext } from "./native/ansi.ts";
+import { getWebNativeContext } from "./native/web.ts";
 
-const engine = await buildEngine(getAnsiNativeContext());
+const engine = await buildEngine(getWebNativeContext());
 
 let running = true;
 
@@ -59,7 +58,9 @@ while (running) {
 
   totalRenderTime += renderTime;
 
-  await delay(Math.max(10, (1000 / TARGET_FPS) - renderTime));
+  await new Promise((resolve) =>
+    setTimeout(resolve, Math.max(10, (1000 / TARGET_FPS) - renderTime))
+  );
 }
 
 destroyEngine(engine);

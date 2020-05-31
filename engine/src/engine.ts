@@ -11,29 +11,33 @@ class EngineImpl implements Engine {
 
   constructor(nativeContext: NativeContext) {
     this.nativeContext = nativeContext;
-    this.context = new EngineContextImpl(this.nativeContext);
+    this.context = new EngineContextImpl(this.nativeContext.screen);
   }
 
   async init() {
-    let consoleSize = this.nativeContext.getScreenSize();
+    let consoleSize = this.nativeContext.screen.getScreenSize();
     while (consoleSize === null) {
       await new Promise<void>((resolve) => {
         setTimeout(resolve, 1);
       });
-      consoleSize = this.nativeContext.getScreenSize();
+      consoleSize = this.nativeContext.screen.getScreenSize();
     }
     this.consoleSize.set(consoleSize.width, consoleSize.height);
+    this.nativeContext.screen.onScreenSizeChanged(
+      this.onScreenSizeChanged.bind(this),
+    );
   }
 
-  public draw() {
-    const newSize = this.nativeContext.getScreenSize();
-    if (newSize !== null && !newSize.equals(this.consoleSize)) {
-      this.consoleSize.set(newSize.width, newSize.height);
+  private onScreenSizeChanged(size: Size): void {
+    if (!size.equals(this.consoleSize)) {
+      this.consoleSize.set(size.width, size.height);
       this.invalidateRect(
         new Rect(0, 0, this.consoleSize.width, this.consoleSize.height),
       );
     }
+  }
 
+  public draw() {
     if (this.invalidRects.length > 0) {
       this.updateLayout();
 
@@ -106,8 +110,8 @@ class EngineImpl implements Engine {
     this.invalidateRect(widget.getBoundingBox());
   }
 
-  public readInput() {
-    return this.nativeContext.readInput();
+  public onInput(listener: (input: string) => void): void {
+    this.nativeContext.input.onInput(listener);
   }
 
   public invalidateRect(rect: Rect) {

@@ -305,6 +305,6 @@ export interface Engine {
   update(): void;
   addWidget(widget: Widget): void;
   removeWidget(widget: Widget): void;
-  readInput(): string;
   invalidateRect(rect: Rect): void;
+  onInput(listener: (input: string) => void): void;
 }

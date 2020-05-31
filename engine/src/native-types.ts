@@ -1,7 +1,9 @@
 import { Color, SpecialChar, Size } from "./types.ts";
 
-export interface NativeContextDraw {
+export interface NativeContextScreen {
   getScreenSize(): Size | null;
+  onScreenSizeChanged(listener: (size: Size) => void): void;
+
   clearScreen(): void;
   reset(): void;
   setChar(
@@ -22,9 +24,11 @@ export interface NativeContextDraw {
 }
 
 export interface NativeContextInput {
-  readInput(): string;
+  onInput(listener: (input: string) => void): void;
 }
 
-export interface NativeContext extends NativeContextDraw, NativeContextInput {
+export interface NativeContext {
+  screen: NativeContextScreen;
+  input: NativeContextInput;
   destroy(): void;
 }
