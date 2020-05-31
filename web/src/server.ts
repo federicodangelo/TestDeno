@@ -11,7 +11,7 @@ app.addEventListener("listen", ({ hostname, port, secure }) => {
 
 app.use(async (context) => {
   await send(context, context.request.url.pathname, {
-    root: `${Deno.cwd()}/../doc/`,
+    root: `${Deno.cwd()}/../docs/`,
     index: "index.html",
   });
 });

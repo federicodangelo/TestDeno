@@ -9,7 +9,7 @@
     },
     "bundle": {
       "tsconfig": "../tsconfig.json",
-      "cmd": "deno bundle src/main.ts ../doc/bundle.js"
+      "cmd": "deno bundle src/main.ts ../docs/bundle.js"
     }
   },
   "watcher": {
