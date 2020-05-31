@@ -15,9 +15,8 @@
     <body>
     </body>
   
+    <script type="module" src="bundle.js"></script>
     <script type="module">
-        import * as game from "/bundle.js";
-        game.run();
         var script = document.createElement('script');
         script.onload = function() {
             var stats = new Stats();

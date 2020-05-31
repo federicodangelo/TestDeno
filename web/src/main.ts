@@ -74,7 +74,7 @@ function update() {
   nextUpdateTime = start + Math.max(10, 1000 / TARGET_FPS - (end - start));
 }
 
-export async function run() {
+async function run() {
   const engine = await init();
 
   function onRequestAnimationFrame() {
@@ -86,3 +86,5 @@ export async function run() {
 
   return engine;
 }
+
+run();

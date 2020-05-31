@@ -581,8 +581,7 @@ System.register(
           }
           invalidateRect(rect) {
             let lastRect = this.invalidRects.length > 0
-              ? this.invalidRects[this.invalidRects.length - 1]
-              : null;
+              ? this.invalidRects[this.invalidRects.length - 1] : null;
             if (lastRect !== null && lastRect.intersects(rect)) {
               lastRect.union(rect);
               return;
@@ -1736,7 +1735,6 @@ System.register(
       onRequestAnimationFrame();
       return engine;
     }
-    exports_14("run", run);
     return {
       setters: [
         function (engine_ts_1_1) {
@@ -1759,10 +1757,10 @@ System.register(
         framesTime = performance.now();
         nextUpdateTime = 0;
         nextUpdateTime = performance.now() + 1000 / TARGET_FPS;
+        run();
       },
     };
   },
 );
 
-const __exp = __instantiate("web/src/main");
-export const run = __exp["run"];
+__instantiate("web/src/main");
