@@ -1,0 +1,14 @@
+{
+  "$schema": "https://deno.land/x/denon/schema.json",
+  "importmap": "../importmap.json",
+  "allow": ["hrtime"],
+  "unstable": true,
+  "scripts": {
+    "dev": {
+      "cmd": "deno run src/main.ts"
+    },
+    "bench": {
+      "cmd": "deno run src/benchmark.ts"
+    }
+  }
+}

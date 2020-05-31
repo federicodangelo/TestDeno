@@ -1,8 +1,8 @@
-import { CharacterWidget } from "./engine/widgets/character.ts";
-import { LabelWidget } from "./engine/widgets/label.ts";
-import { FixedColor, Engine, Color, rgb, Intensity } from "./engine/types.ts";
-import { SplitPanelContainerWidget } from "./engine/widgets/split-panel.ts";
-import { ScrollableContainerWidget } from "./engine/widgets/scrollable.ts";
+import { CharacterWidget } from "engine/widgets/character.ts";
+import { LabelWidget } from "engine/widgets/label.ts";
+import { FixedColor, Engine, Color, rgb, Intensity } from "engine/types.ts";
+import { SplitPanelContainerWidget } from "engine/widgets/split-panel.ts";
+import { ScrollableContainerWidget } from "engine/widgets/scrollable.ts";
 
 const NPCS_COUNT = 2;
 const MAP_SIZE = 512;

@@ -1,7 +1,8 @@
 import { delay } from "./utils.ts";
-import { buildEngine, destroyEngine } from "./engine/engine.ts";
+import { buildEngine, destroyEngine } from "engine/engine.ts";
+import { getAnsiNativeContext } from "./native/ansi.ts";
 
-const engine = await buildEngine();
+const engine = await buildEngine(getAnsiNativeContext());
 
 const ESC = "\u001b";
 

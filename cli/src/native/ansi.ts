@@ -7,8 +7,8 @@ import {
   Point,
   Color,
   SpecialChar,
-} from "./../types.ts";
-import { NativeContext } from "./types.ts";
+} from "engine/types.ts";
+import { NativeContext } from "engine/native-types.ts";
 
 const ESC = "\u001b";
 const CSI = "\u001b[";

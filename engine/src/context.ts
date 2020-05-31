@@ -6,7 +6,7 @@ import {
   EngineContext,
   FixedColor,
 } from "./types.ts";
-import { NativeContextDraw } from "./native/types.ts";
+import { NativeContextDraw } from "./native-types.ts";
 
 export class EngineContextImpl implements EngineContext {
   private bounds = new Rect();

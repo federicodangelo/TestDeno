@@ -1,10 +1,11 @@
 import { delay } from "./utils.ts";
-import { FixedColor } from "./engine/types.ts";
-import { buildEngine, destroyEngine } from "./engine/engine.ts";
-import { LabelWidget } from "./engine/widgets/label.ts";
+import { FixedColor } from "engine/types.ts";
+import { buildEngine, destroyEngine } from "engine/engine.ts";
+import { LabelWidget } from "engine/widgets/label.ts";
 import { initGame, updateGame, mainUI } from "./game.ts";
+import { getAnsiNativeContext } from "./native/ansi.ts";
 
-const engine = await buildEngine();
+const engine = await buildEngine(getAnsiNativeContext());
 
 let running = true;
 

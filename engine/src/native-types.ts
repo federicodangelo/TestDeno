@@ -1,4 +1,4 @@
-import { Color, SpecialChar, Size } from "../types.ts";
+import { Color, SpecialChar, Size } from "./types.ts";
 
 export interface NativeContextDraw {
   getScreenSize(): Size | null;

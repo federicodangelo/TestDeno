@@ -1,9 +1,6 @@
-import {
-  getAnsiNativeContext,
-} from "./native/ansi.ts";
 import { Engine, Widget, Size, Point, Rect, EngineContext } from "./types.ts";
 import { EngineContextImpl } from "./context.ts";
-import { NativeContext } from "./native/types.ts";
+import { NativeContext } from "./native-types.ts";
 
 class EngineImpl implements Engine {
   private children: Widget[] = [];
@@ -12,8 +9,8 @@ class EngineImpl implements Engine {
   private consoleSize = new Size();
   private invalidRects: Rect[] = [];
 
-  constructor() {
-    this.nativeContext = getAnsiNativeContext();
+  constructor(nativeContext: NativeContext) {
+    this.nativeContext = nativeContext;
     this.context = new EngineContextImpl(this.nativeContext);
   }
 
@@ -131,8 +128,8 @@ class EngineImpl implements Engine {
   }
 }
 
-export async function buildEngine() {
-  const engine = new EngineImpl();
+export async function buildEngine(nativeContext: NativeContext) {
+  const engine = new EngineImpl(nativeContext);
   await engine.init();
   return engine;
 }

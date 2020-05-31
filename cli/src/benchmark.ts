@@ -1,9 +1,9 @@
 import {
   getAnsiNativeContext,
-} from "./engine/native/ansi.ts";
+} from "./native/ansi.ts";
 import { delay } from "./utils.ts";
-import { FixedColor, SpecialChar, Size, Color } from "./engine/types.ts";
-import { EngineContextImpl } from "./engine/context.ts";
+import { FixedColor, SpecialChar, Size, Color } from "engine/types.ts";
+import { EngineContextImpl } from "engine/context.ts";
 
 const nativeContext = getAnsiNativeContext();
 
