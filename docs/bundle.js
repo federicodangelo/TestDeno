@@ -581,7 +581,8 @@ System.register(
           }
           invalidateRect(rect) {
             let lastRect = this.invalidRects.length > 0
-              ? this.invalidRects[this.invalidRects.length - 1] : null;
+              ? this.invalidRects[this.invalidRects.length - 1]
+              : null;
             if (lastRect !== null && lastRect.intersects(rect)) {
               lastRect.union(rect);
               return;
