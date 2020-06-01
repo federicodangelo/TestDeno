@@ -2,15 +2,24 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Deno",
+      "name": "Debug CLI in deno",
       "type": "node",
       "request": "launch",
-      "cwd": "${workspaceFolder}",
+      "cwd": "${workspaceFolder}/cli",
       "runtimeExecutable": "deno",
-      "runtimeArgs": ["run", "--unstable", "--inspect-brk", "-A", "src/main.ts"],
+      "runtimeArgs": ["run", "--unstable", "--importmap=../importmap.json", "-A", "src/main.ts"],
       "port": 9229,
       "console": "integratedTerminal",
-      //"outputCapture": "std"
-    }
-  ]
+    },
+    {
+      "name": "Debug WEB in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://127.0.0.1:8080/index.html",
+      "webRoot": "${workspaceFolder}/web/",
+      "sourceMaps": false,
+      "runtimeArgs": ["--disable-web-security"],
+      "preLaunchTask": "${defaultBuildTask}"
+    },
+  ],
 }

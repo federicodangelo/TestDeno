@@ -1,0 +1,43 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "web-bundle",
+        "type": "shell",
+        "options": {
+            "cwd": "${workspaceFolder}/web"
+        },
+        "command": "deno",
+        "args": [ "bundle", "--unstable", "--importmap=../importmap.json", "--config=../tsconfig.json", "src/main.ts", "../docs/bundle.js" ],
+        "group": {
+          "kind": "build",
+          "isDefault": true
+        },
+      },
+      {
+        "label": "web-bundle-watcher",
+        "type": "shell",
+        "options": {
+            "cwd": "${workspaceFolder}/web"
+        },
+        "command": "denon",
+        "args": [ "bundle" ],
+        "group": "none",
+        "isBackground": true
+      },
+      {
+        "label": "web-server",
+        "type": "shell",
+        "options": {
+            "cwd": "${workspaceFolder}/web"
+        },
+        "command": "denon",
+        "args": [ "dev" ],
+        "group": "none",
+        "isBackground": true
+      },
+
+    ]
+  }
