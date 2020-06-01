@@ -25,7 +25,7 @@ class EngineImpl implements Engine {
     }
     this.consoleSize.set(consoleSize.width, consoleSize.height);
     this.nativeContext.screen.onScreenSizeChanged(
-      this.onScreenSizeChanged.bind(this),
+      this.onScreenSizeChanged.bind(this)
     );
   }
 
@@ -33,55 +33,60 @@ class EngineImpl implements Engine {
     if (!size.equals(this.consoleSize)) {
       this.consoleSize.set(size.width, size.height);
       this.invalidateRect(
-        new Rect(0, 0, this.consoleSize.width, this.consoleSize.height),
+        new Rect(0, 0, this.consoleSize.width, this.consoleSize.height)
       );
     }
   }
 
   public draw() {
-    if (this.invalidRects.length > 0) {
-      this.updateLayout();
+    if (this.invalidRects.length == 0) return;
 
-      const clip = new Rect();
-      const consoleSize = this.consoleSize;
+    var pendingLayout = true;
 
-      for (let i = 0; i < this.invalidRects.length; i++) {
-        clip.copyFrom(this.invalidRects[i]);
-        if (clip.x < 0) {
-          clip.width += clip.x;
-          clip.x = 0;
-        }
-        if (clip.y < 0) {
-          clip.height += clip.y;
-          clip.y = 0;
-        }
-        if (
-          clip.width <= 0 || clip.height <= 0 ||
-          clip.x > consoleSize.width || clip.y > consoleSize.height
-        ) {
-          continue;
-        }
-        if (clip.x + clip.width > consoleSize.width) {
-          clip.width = consoleSize.width - clip.x;
-        }
-        if (clip.y + clip.height > consoleSize.height) {
-          clip.height = consoleSize.height - clip.y;
-        }
+    const clip = new Rect();
+    const consoleSize = this.consoleSize;
 
-        this.context.beginDraw(
-          clip.x,
-          clip.y,
-          clip.width,
-          clip.height,
-        );
+    this.context.beginDraw();
 
-        for (let i = 0; i < this.children.length; i++) {
-          this.children[i].draw(this.context);
-        }
-
-        this.context.endDraw();
+    for (let i = 0; i < this.invalidRects.length; i++) {
+      clip.copyFrom(this.invalidRects[i]);
+      if (clip.x < 0) {
+        clip.width += clip.x;
+        clip.x = 0;
       }
+      if (clip.y < 0) {
+        clip.height += clip.y;
+        clip.y = 0;
+      }
+      if (
+        clip.width <= 0 ||
+        clip.height <= 0 ||
+        clip.x > consoleSize.width ||
+        clip.y > consoleSize.height
+      ) {
+        continue;
+      }
+      if (clip.x + clip.width > consoleSize.width) {
+        clip.width = consoleSize.width - clip.x;
+      }
+      if (clip.y + clip.height > consoleSize.height) {
+        clip.height = consoleSize.height - clip.y;
+      }
+
+      if (pendingLayout) {
+        pendingLayout = false;
+        this.updateLayout();
+      }
+
+      this.context.beginClip(clip.x, clip.y, clip.width, clip.height);
+
+      for (let i = 0; i < this.children.length; i++) {
+        this.children[i].draw(this.context);
+      }
+
+      this.context.endClip();
     }
+    this.context.endDraw();
 
     this.invalidRects.length = 0;
   }
@@ -90,13 +95,12 @@ class EngineImpl implements Engine {
     for (let i = 0; i < this.children.length; i++) {
       this.children[i].updateLayout(
         this.consoleSize.width,
-        this.consoleSize.height,
+        this.consoleSize.height
       );
     }
   }
 
-  public update(): void {
-  }
+  public update(): void {}
 
   public addWidget(widget: Widget): void {
     this.children.push(widget);
@@ -116,9 +120,10 @@ class EngineImpl implements Engine {
   }
 
   public invalidateRect(rect: Rect) {
-    let lastRect = this.invalidRects.length > 0
-      ? this.invalidRects[this.invalidRects.length - 1]
-      : null;
+    let lastRect =
+      this.invalidRects.length > 0
+        ? this.invalidRects[this.invalidRects.length - 1]
+        : null;
 
     if (lastRect !== null && lastRect.intersects(rect)) {
       lastRect.union(rect);

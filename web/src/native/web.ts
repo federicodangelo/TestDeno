@@ -52,11 +52,13 @@ const AnsiSpecialChar: number[] = [
   useCp437 ? 206 : "╬".charCodeAt(0),
 ];
 
-function rgb(r: number, g: number, b: number) {
-  return (r << 16) | (g << 8) | b;
+type RGB = number[];
+
+function rgb(r: number, g: number, b: number): RGB {
+  return [r, g, b];
 }
 
-function colorToFillStyle(color: Color): number {
+function colorToRGB(color: Color): RGB {
   if (color <= 16) {
     switch (color) {
       case FixedColor.Black:
@@ -100,14 +102,14 @@ function colorToFillStyle(color: Color): number {
   if (color < 232) {
     color -= 16;
 
-    const r = Math.trunc((Math.trunc(color / 36)) * 255 / 6);
-    const g = Math.trunc((Math.trunc((color / 6)) % 6) * 255 / 6);
-    const b = Math.trunc((Math.trunc(color % 6)) * 255 / 6);
+    const r = Math.trunc((Math.trunc(color / 36) * 255) / 6);
+    const g = Math.trunc(((Math.trunc(color / 6) % 6) * 255) / 6);
+    const b = Math.trunc((Math.trunc(color % 6) * 255) / 6);
 
     return rgb(r, g, b);
   }
 
-  return 0;
+  return rgb(0, 0, 0);
 }
 
 export function getWebNativeContext(): NativeContext {
@@ -121,6 +123,11 @@ export function getWebNativeContext(): NativeContext {
   let activeFont: FontInfo;
   let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   let imageDataPixels = imageData.data;
+  let lastForeColor = -1;
+  let lastForeColorRGB = rgb(0, 0, 0);
+  let lastBackColor = -1;
+  let lastBackColorRGB = rgb(0, 0, 0);
+  let dirty = true;
 
   ctx.imageSmoothingEnabled = false;
 
@@ -130,7 +137,7 @@ export function getWebNativeContext(): NativeContext {
   const updateConsoleSize = () => {
     consoleSize.set(
       Math.trunc(canvas.width / charWidth),
-      Math.trunc(canvas.height / charHeight),
+      Math.trunc(canvas.height / charHeight)
     );
   };
 
@@ -139,10 +146,19 @@ export function getWebNativeContext(): NativeContext {
     foreColor: Color,
     backColor: Color,
     x: number,
-    y: number,
+    y: number
   ) => {
-    const front = colorToFillStyle(foreColor);
-    const back = colorToFillStyle(backColor);
+    dirty = true;
+
+    if (lastForeColor !== foreColor) {
+      lastForeColor = foreColor;
+      lastForeColorRGB = colorToRGB(foreColor);
+    }
+
+    if (lastBackColor !== backColor) {
+      lastBackColor = backColor;
+      lastBackColorRGB = colorToRGB(backColor);
+    }
 
     if (char < 0 || char > 255) return;
 
@@ -151,13 +167,13 @@ export function getWebNativeContext(): NativeContext {
     const fx = x * charWidth;
     const fy = y * charHeight;
 
-    const fr = (front >> 16) & 0xFF;
-    const fg = (front >> 8) & 0xFF;
-    const fb = front & 0xFF;
+    const fr = lastForeColorRGB[0];
+    const fg = lastForeColorRGB[1];
+    const fb = lastForeColorRGB[2];
 
-    const br = (back >> 16) & 0xFF;
-    const bg = (back >> 8) & 0xFF;
-    const bb = back & 0xFF;
+    const br = lastBackColorRGB[0];
+    const bg = lastBackColorRGB[1];
+    const bb = lastBackColorRGB[2];
 
     for (let py = 0; py < charHeight; py++) {
       let p = (fy + py) * (imageData.width << 2) + (fx << 2);
@@ -213,7 +229,7 @@ export function getWebNativeContext(): NativeContext {
         foreColor: Color,
         backColor: Color,
         x: number,
-        y: number,
+        y: number
       ) => {
         setChar(char, foreColor, backColor, x, y);
       },
@@ -222,14 +238,16 @@ export function getWebNativeContext(): NativeContext {
         foreColor: Color,
         backColor: Color,
         x: number,
-        y: number,
+        y: number
       ) => {
         setChar(AnsiSpecialChar[char], foreColor, backColor, x, y);
       },
-      beginDraw: () => {
-      },
+      beginDraw: () => {},
       endDraw: () => {
-        ctx.putImageData(imageData, 0, 0);
+        if (dirty) {
+          ctx.putImageData(imageData, 0, 0);
+          dirty = false;
+        }
       },
     },
     input: {

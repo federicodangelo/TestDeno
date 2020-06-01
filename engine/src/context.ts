@@ -28,7 +28,11 @@ export class EngineContextImpl implements EngineContext {
     this.nativeContext = nativeContext;
   }
 
-  public beginDraw(x: number, y: number, width: number, height: number) {
+  public beginDraw() {
+    this.nativeContext.beginDraw();
+  }
+
+  public beginClip(x: number, y: number, width: number, height: number) {
     this.bounds.set(x, y, width, height);
     this.clip.set(x, y, width, height);
     this.transformsStack.length = 0;
@@ -37,8 +41,9 @@ export class EngineContextImpl implements EngineContext {
     this.y = 0;
     this.tx = 0;
     this.ty = 0;
-    this.nativeContext.beginDraw();
   }
+
+  public endClip() {}
 
   public endDraw() {
     this.nativeContext.endDraw();
@@ -78,12 +83,14 @@ export class EngineContextImpl implements EngineContext {
     x: number,
     y: number,
     width: number,
-    height: number,
+    height: number
   ): boolean {
-    return !(this.tx + x + width < this.clip.x ||
+    return !(
+      this.tx + x + width < this.clip.x ||
       this.ty + y + height < this.clip.y ||
       this.tx + x > this.clip.x + this.clip.width ||
-      this.ty + y > this.clip.y + this.clip.height);
+      this.ty + y > this.clip.y + this.clip.height
+    );
   }
 
   public moveCursorTo(x: number, y: number) {
@@ -115,15 +122,17 @@ export class EngineContextImpl implements EngineContext {
     const screenX = this.x + this.tx;
     const screenY = this.y + this.ty;
     if (
-      screenX >= this.clip.x && screenX < this.clip.x1 &&
-      screenY >= this.clip.y && screenY < this.clip.y1
+      screenX >= this.clip.x &&
+      screenX < this.clip.x1 &&
+      screenY >= this.clip.y &&
+      screenY < this.clip.y1
     ) {
       this.nativeContext.setChar(
         code,
         this.foreColor,
         this.backColor,
         screenX,
-        screenY,
+        screenY
       );
     }
     this.x++;
@@ -141,15 +150,17 @@ export class EngineContextImpl implements EngineContext {
     const screenX = this.x + this.tx;
     const screenY = this.y + this.ty;
     if (
-      screenX >= this.clip.x && screenX < this.clip.x1 &&
-      screenY >= this.clip.y && screenY < this.clip.y1
+      screenX >= this.clip.x &&
+      screenX < this.clip.x1 &&
+      screenY >= this.clip.y &&
+      screenY < this.clip.y1
     ) {
       this.nativeContext.setSpecialChar(
         code,
         this.foreColor,
         this.backColor,
         screenX,
-        screenY,
+        screenY
       );
     }
     this.x++;
@@ -177,10 +188,7 @@ export class EngineContextImpl implements EngineContext {
       return this;
     }
 
-    if (
-      x0 !== x && x0 !== x + width &&
-      y0 !== y && y0 !== y + height
-    ) {
+    if (x0 !== x && x0 !== x + width && y0 !== y && y0 !== y + height) {
       return this;
     }
 
@@ -207,7 +215,7 @@ export class EngineContextImpl implements EngineContext {
     y: number,
     width: number,
     height: number,
-    char: string,
+    char: string
   ) {
     if (char.length === 0) return this;
 
@@ -233,7 +241,7 @@ export class EngineContextImpl implements EngineContext {
           this.foreColor,
           this.backColor,
           screenX,
-          screenY,
+          screenY
         );
       }
     }
