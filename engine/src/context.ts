@@ -37,11 +37,11 @@ export class EngineContextImpl implements EngineContext {
     this.y = 0;
     this.tx = 0;
     this.ty = 0;
-    this.nativeContext.reset();
+    this.nativeContext.beginDraw();
   }
 
   public endDraw() {
-    this.nativeContext.apply();
+    this.nativeContext.endDraw();
   }
 
   pushTransform(x: number, y: number) {

@@ -5,7 +5,7 @@ export interface NativeContextScreen {
   onScreenSizeChanged(listener: (size: Size) => void): void;
 
   clearScreen(): void;
-  reset(): void;
+  beginDraw(): void;
   setChar(
     char: number,
     foreColor: Color,
@@ -20,7 +20,7 @@ export interface NativeContextScreen {
     x: number,
     y: number,
   ): void;
-  apply(): void;
+  endDraw(): void;
 }
 
 export interface NativeContextInput {
@@ -28,6 +28,7 @@ export interface NativeContextInput {
 }
 
 export interface NativeContext {
+  init(): Promise<void>;
   screen: NativeContextScreen;
   input: NativeContextInput;
   destroy(): void;

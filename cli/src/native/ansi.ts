@@ -271,7 +271,7 @@ export function getAnsiNativeContext(): NativeContext {
       onScreenSizeChanged: (listener) => {
         screenSizeChangedListeners.push(listener);
       },
-      reset: () => {
+      beginDraw: () => {
         requestUpdateConsoleSize();
         lastDrawX = NaN;
         lastDrawY = NaN;
@@ -289,7 +289,7 @@ export function getAnsiNativeContext(): NativeContext {
       ) => {
         setChar(AnsiSpecialChar[char], foreColor, backColor, x, y);
       },
-      apply: () => {
+      endDraw: () => {
         if (useCp437) {
           const codes8 = new Uint8Array(offset);
           for (let i = 0; i < offset; i++) {
@@ -307,6 +307,8 @@ export function getAnsiNativeContext(): NativeContext {
       onInput: (listener) => {
         inputListeners.push(listener);
       },
+    },
+    init: async () => {
     },
     destroy: () => {
       clearScreen();

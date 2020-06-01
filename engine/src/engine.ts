@@ -15,6 +15,7 @@ class EngineImpl implements Engine {
   }
 
   async init() {
+    await this.nativeContext.init();
     let consoleSize = this.nativeContext.screen.getScreenSize();
     while (consoleSize === null) {
       await new Promise<void>((resolve) => {
