@@ -62,9 +62,7 @@ export abstract class BaseWidgetContainer extends BaseWidget
           this.innerHeight,
         );
       }
-    } else if (
-      this.childrenLayout !== null && this.childrenLayout.type === "vertical"
-    ) {
+    } else if (this.childrenLayout.type === "vertical") {
       const spacing = this.childrenLayout.spacing || 0;
       let top = 0;
       for (let i = 0; i < this.children.length; i++) {
@@ -76,10 +74,7 @@ export abstract class BaseWidgetContainer extends BaseWidget
         this.children[i].y = top;
         top += this.children[i].height + spacing;
       }
-    } else if (
-      this.childrenLayout !== null &&
-      this.childrenLayout.type === "horizontal"
-    ) {
+    } else if (this.childrenLayout.type === "horizontal") {
       const spacing = this.childrenLayout.spacing || 0;
       let left = 0;
       for (let i = 0; i < this.children.length; i++) {
@@ -92,6 +87,7 @@ export abstract class BaseWidgetContainer extends BaseWidget
         left += this.children[i].width + spacing;
       }
     }
+    //The last option is "none".. so we don't do anything
   }
 
   public draw(context: EngineContext): void {

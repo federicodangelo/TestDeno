@@ -97,7 +97,7 @@ export interface WidgetLayout {
 }
 
 export interface ChildrenLayout {
-  type: "absolute" | "vertical" | "horizontal";
+  type: "absolute" | "vertical" | "horizontal" | "none";
   spacing?: number;
 }
 

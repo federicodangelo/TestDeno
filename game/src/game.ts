@@ -27,6 +27,7 @@ mainUI.panel2.backColor = FixedColor.BrightBlack;
 const playingBox = new ScrollableContainerWidget();
 
 playingBox.setLayout({ heightPercent: 100, widthPercent: 100 });
+playingBox.setChildrenLayout({ type: "none" });
 playingBox.parent = mainUI.panel1;
 
 mainUI.panel1.title = " Map ";
