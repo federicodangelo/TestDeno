@@ -4,7 +4,6 @@ export interface NativeContextScreen {
   getScreenSize(): Size | null;
   onScreenSizeChanged(listener: (size: Size) => void): void;
 
-  clearScreen(): void;
   beginDraw(): void;
   setChar(
     char: number,

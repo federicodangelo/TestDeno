@@ -916,10 +916,7 @@ System.register(
                   this.innerHeight,
                 );
               }
-            } else if (
-              this.childrenLayout !== null &&
-              this.childrenLayout.type === "vertical"
-            ) {
+            } else if (this.childrenLayout.type === "vertical") {
               const spacing = this.childrenLayout.spacing || 0;
               let top = 0;
               for (let i = 0; i < this.children.length; i++) {
@@ -931,10 +928,7 @@ System.register(
                 this.children[i].y = top;
                 top += this.children[i].height + spacing;
               }
-            } else if (
-              this.childrenLayout !== null &&
-              this.childrenLayout.type === "horizontal"
-            ) {
+            } else if (this.childrenLayout.type === "horizontal") {
               const spacing = this.childrenLayout.spacing || 0;
               let left = 0;
               for (let i = 0; i < this.children.length; i++) {
@@ -947,6 +941,7 @@ System.register(
                 left += this.children[i].width + spacing;
               }
             }
+            //The last option is "none".. so we don't do anything
           }
           draw(context) {
             if (!context.isVisible(this.x, this.y, this.width, this.height)) {
@@ -1413,6 +1408,7 @@ System.register(
         mainUI.panel2.backColor = 8 /* BrightBlack */;
         playingBox = new scrollable_ts_1.ScrollableContainerWidget();
         playingBox.setLayout({ heightPercent: 100, widthPercent: 100 });
+        playingBox.setChildrenLayout({ type: "none" });
         playingBox.parent = mainUI.panel1;
         mainUI.panel1.title = " Map ";
         mainUI.panel1.titleForeColor = 15 /* BrightWhite */;
@@ -1756,7 +1752,6 @@ System.register(
       return {
         screen: {
           getScreenSize: () => consoleSize,
-          clearScreen: () => {},
           onScreenSizeChanged: (listener) => {
             screenSizeChangedListeners.push(listener);
           },

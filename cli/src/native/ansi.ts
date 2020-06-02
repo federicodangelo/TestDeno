@@ -61,6 +61,11 @@ const encoder = new TextEncoder();
 
 function shutdownAnsi() {
   drawAscii(`${CSI}!p`); //reset
+  drawAscii(`${CSI}0m`); //reset
+  drawAscii(`${CSI}39m`); //reset fore color
+  drawAscii(`${CSI}49m`); //reset back color
+  drawAscii(`${CSI}?25h`); //show cursor
+
   shutdownInput();
 }
 
@@ -263,7 +268,6 @@ export function getAnsiNativeContext(): NativeContext {
 
   return {
     screen: {
-      clearScreen,
       getScreenSize: () => {
         requestUpdateConsoleSize();
         return consoleSize;
@@ -311,8 +315,8 @@ export function getAnsiNativeContext(): NativeContext {
     init: async () => {
     },
     destroy: () => {
-      clearScreen();
       shutdownAnsi();
+      clearScreen();
     },
   };
 }

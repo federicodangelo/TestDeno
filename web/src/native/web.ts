@@ -137,7 +137,7 @@ export function getWebNativeContext(): NativeContext {
   const updateConsoleSize = () => {
     consoleSize.set(
       Math.trunc(canvas.width / charWidth),
-      Math.trunc(canvas.height / charHeight)
+      Math.trunc(canvas.height / charHeight),
     );
   };
 
@@ -146,7 +146,7 @@ export function getWebNativeContext(): NativeContext {
     foreColor: Color,
     backColor: Color,
     x: number,
-    y: number
+    y: number,
   ) => {
     dirty = true;
 
@@ -220,7 +220,6 @@ export function getWebNativeContext(): NativeContext {
   return {
     screen: {
       getScreenSize: () => consoleSize,
-      clearScreen: () => {},
       onScreenSizeChanged: (listener) => {
         screenSizeChangedListeners.push(listener);
       },
@@ -229,7 +228,7 @@ export function getWebNativeContext(): NativeContext {
         foreColor: Color,
         backColor: Color,
         x: number,
-        y: number
+        y: number,
       ) => {
         setChar(char, foreColor, backColor, x, y);
       },
@@ -238,7 +237,7 @@ export function getWebNativeContext(): NativeContext {
         foreColor: Color,
         backColor: Color,
         x: number,
-        y: number
+        y: number,
       ) => {
         setChar(AnsiSpecialChar[char], foreColor, backColor, x, y);
       },
