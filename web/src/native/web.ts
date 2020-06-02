@@ -52,10 +52,15 @@ const AnsiSpecialChar: number[] = [
   useCp437 ? 206 : "╬".charCodeAt(0),
 ];
 
-type RGB = number[];
+type RGB = number;
 
 function rgb(r: number, g: number, b: number): RGB {
-  return [r, g, b];
+  return (
+    (255 << 24) | // alpha
+    (b << 16) | // blue
+    (g << 8) | // green
+    r
+  );
 }
 
 function colorToRGB(color: Color): RGB {
@@ -123,10 +128,11 @@ export function getWebNativeContext(): NativeContext {
   let activeFont: FontInfo;
   let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   let imageDataPixels = imageData.data;
+  let imageDataPixels32: Uint32Array = new Uint32Array(imageDataPixels.buffer);
+
   let lastForeColor = -1;
-  let lastForeColorRGB = rgb(0, 0, 0);
   let lastBackColor = -1;
-  let lastBackColorRGB = rgb(0, 0, 0);
+  const colorsRGB = new Uint32Array(2);
   let dirty = true;
 
   ctx.imageSmoothingEnabled = false;
@@ -137,7 +143,7 @@ export function getWebNativeContext(): NativeContext {
   const updateConsoleSize = () => {
     consoleSize.set(
       Math.trunc(canvas.width / charWidth),
-      Math.trunc(canvas.height / charHeight),
+      Math.trunc(canvas.height / charHeight)
     );
   };
 
@@ -146,18 +152,18 @@ export function getWebNativeContext(): NativeContext {
     foreColor: Color,
     backColor: Color,
     x: number,
-    y: number,
+    y: number
   ) => {
     dirty = true;
 
     if (lastForeColor !== foreColor) {
       lastForeColor = foreColor;
-      lastForeColorRGB = colorToRGB(foreColor);
+      colorsRGB[1] = colorToRGB(foreColor);
     }
 
     if (lastBackColor !== backColor) {
       lastBackColor = backColor;
-      lastBackColorRGB = colorToRGB(backColor);
+      colorsRGB[0] = colorToRGB(backColor);
     }
 
     if (char < 0 || char > 255) return;
@@ -167,32 +173,27 @@ export function getWebNativeContext(): NativeContext {
     const fx = x * charWidth;
     const fy = y * charHeight;
 
-    const fr = lastForeColorRGB[0];
-    const fg = lastForeColorRGB[1];
-    const fb = lastForeColorRGB[2];
-
-    const br = lastBackColorRGB[0];
-    const bg = lastBackColorRGB[1];
-    const bb = lastBackColorRGB[2];
+    let p = 0;
+    let f = 0;
 
     for (let py = 0; py < charHeight; py++) {
-      let p = (fy + py) * (imageData.width << 2) + (fx << 2);
-      let f = py * charWidth;
-      for (let px = 0; px < charWidth; px++) {
-        if (charPixels[f] === 0) {
-          imageDataPixels[p] = br;
-          imageDataPixels[p + 1] = bg;
-          imageDataPixels[p + 2] = bb;
-        } else {
-          imageDataPixels[p] = fr;
-          imageDataPixels[p + 1] = fg;
-          imageDataPixels[p + 2] = fb;
-        }
+      p = (fy + py) * imageData.width + fx;
+      f = py * charWidth;
+      //for (let px = 0; px < charWidth; px++) {
+      //      imageDataPixels32[p++] = colorsRGB[charPixels[f++]];
+      //}
 
-        imageDataPixels[p + 3] = 255;
-        p += 4;
-        f += 1;
-      }
+      imageDataPixels32[p + 0] = colorsRGB[charPixels[f + 0]];
+      imageDataPixels32[p + 1] = colorsRGB[charPixels[f + 1]];
+      imageDataPixels32[p + 2] = colorsRGB[charPixels[f + 2]];
+      imageDataPixels32[p + 3] = colorsRGB[charPixels[f + 3]];
+      imageDataPixels32[p + 4] = colorsRGB[charPixels[f + 4]];
+      imageDataPixels32[p + 5] = colorsRGB[charPixels[f + 5]];
+      imageDataPixels32[p + 6] = colorsRGB[charPixels[f + 6]];
+      imageDataPixels32[p + 7] = colorsRGB[charPixels[f + 7]];
+      imageDataPixels32[p + 8] = colorsRGB[charPixels[f + 8]];
+      p += 9;
+      f += 9;
     }
   };
 
@@ -209,6 +210,7 @@ export function getWebNativeContext(): NativeContext {
     canvas.height = window.innerHeight;
     imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     imageDataPixels = imageData.data;
+    imageDataPixels32 = new Uint32Array(imageDataPixels.buffer);
     updateConsoleSize();
     screenSizeChangedListeners.forEach((l) => l(consoleSize));
   };
@@ -228,7 +230,7 @@ export function getWebNativeContext(): NativeContext {
         foreColor: Color,
         backColor: Color,
         x: number,
-        y: number,
+        y: number
       ) => {
         setChar(char, foreColor, backColor, x, y);
       },
@@ -237,7 +239,7 @@ export function getWebNativeContext(): NativeContext {
         foreColor: Color,
         backColor: Color,
         x: number,
-        y: number,
+        y: number
       ) => {
         setChar(AnsiSpecialChar[char], foreColor, backColor, x, y);
       },
